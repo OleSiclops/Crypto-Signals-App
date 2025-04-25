@@ -1,4 +1,4 @@
-# fetcher.py
+# fetcher.py - v1.1
 
 import requests
 from config import COINGECKO_API_BASE, TOP_N_COINS
@@ -27,5 +27,14 @@ def get_ohlc_data(coin_id, days=1):
         return response.json()
     except Exception as e:
         log_resolution(coin_id, "Higher Accuracy (Hourly Data)", f"Failed: {e}")
-        # Placeholder: Add fallback to daily data here
-        return []
+        # Attempt fallback to daily data
+        try:
+            fallback_url = f"{COINGECKO_API_BASE}/coins/{coin_id}/ohlc"
+            fallback_params = {"vs_currency": "usd", "days": 7}
+            fallback_response = requests.get(fallback_url, params=fallback_params)
+            fallback_response.raise_for_status()
+            log_resolution(coin_id, "Lower Accuracy (Daily Data)", "Success (Fallback)")
+            return fallback_response.json()
+        except Exception as fallback_e:
+            log_resolution(coin_id, "Lower Accuracy (Daily Data)", f"Failed: {fallback_e}")
+            return []
