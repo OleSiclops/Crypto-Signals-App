@@ -19,12 +19,13 @@ HEADERS = {
 def get_top_gainers(period="1h"):
     url = f"{COINGECKO_API_BASE}/coins/markets"
     params = {
-        "vs_currency": "usd",
-        "order": "percent_change_1h_desc" if period == "1h" else "percent_change_4h_desc",
-        "per_page": TOP_N_COINS,
-        "page": 1,
-        "price_change_percentage": "1h,4h"
-    }
+    "vs_currency": "usd",
+    "order": "market_cap_desc",  # default sort by market cap first
+    "per_page": TOP_N_COINS,
+    "page": 1,
+    "sparkline": "false",
+    "price_change_percentage": "1h"
+}
     response = requests.get(url, params=params, headers=HEADERS)
     response.raise_for_status()
     return [coin["id"] for coin in response.json()]
