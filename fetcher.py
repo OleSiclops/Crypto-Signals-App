@@ -1,4 +1,4 @@
-# fetcher.py - Final v1.4 with Analyst API Key
+# fetcher.py
 
 import requests
 from config import COINGECKO_API_BASE, TOP_N_COINS, COINGECKO_API_KEY
@@ -19,16 +19,24 @@ HEADERS = {
 def get_top_gainers(period="1h"):
     url = f"{COINGECKO_API_BASE}/coins/markets"
     params = {
-    "vs_currency": "usd",
-    "order": "market_cap_desc",  # default sort by market cap first
-    "per_page": TOP_N_COINS,
-    "page": 1,
-    "sparkline": "false",
-    "price_change_percentage": "1h"
-}
+        "vs_currency": "usd",
+        "order": "market_cap_desc",
+        "per_page": TOP_N_COINS,
+        "page": 1,
+        "sparkline": False,
+    }
     response = requests.get(url, params=params, headers=HEADERS)
     response.raise_for_status()
-    return [coin["id"] for coin in response.json()]
+    coins = response.json()
+    
+    # Manually sort by 1h price change if needed
+    if period == "1h":
+        coins.sort(key=lambda x: x.get('price_change_percentage_1h_in_currency', 0), reverse=True)
+    elif period == "4h":
+        # Extend later for 4h sorting if needed
+        pass
+
+    return [coin["id"] for coin in coins[:TOP_N_COINS]]
 
 def get_coin_metadata(coin_id):
     try:
