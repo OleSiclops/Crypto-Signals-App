@@ -1,3 +1,5 @@
+# streamlit_main.py
+
 import streamlit as st
 from fetcher import get_top_gainers, fetch_multiple_enriched_coins
 
@@ -8,7 +10,7 @@ st.write("Fetching top 1h gainers from CoinGecko...")
 try:
     gainers_1h = get_top_gainers("1h")
     st.success(f"Top 1h gainers: {gainers_1h[:5]}")
-
+    
     sample_coins = gainers_1h[:5]
     st.write("Fetching enriched metadata and OHLC data...")
 

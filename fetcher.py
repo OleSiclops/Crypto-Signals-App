@@ -1,5 +1,7 @@
+# fetcher.py - Final v1.4 with Analyst API Key
+
 import requests
-from config import COINGECKO_API_BASE, TOP_N_COINS
+from config import COINGECKO_API_BASE, TOP_N_COINS, COINGECKO_API_KEY
 from utils import log_resolution, print_progress_bar
 import time
 
@@ -10,6 +12,10 @@ TOP_25_TAGS = [
     "meme-token", "dao", "launchpad", "cross-chain", "identity", "staking", "payments", "web3"
 ]
 
+HEADERS = {
+    "x-cg-pro-api-key": COINGECKO_API_KEY
+}
+
 def get_top_gainers(period="1h"):
     url = f"{COINGECKO_API_BASE}/coins/markets"
     params = {
@@ -19,7 +25,7 @@ def get_top_gainers(period="1h"):
         "page": 1,
         "price_change_percentage": "1h,4h"
     }
-    response = requests.get(url, params=params)
+    response = requests.get(url, params=params, headers=HEADERS)
     response.raise_for_status()
     return [coin["id"] for coin in response.json()]
 
@@ -27,7 +33,7 @@ def get_coin_metadata(coin_id):
     try:
         url = f"{COINGECKO_API_BASE}/coins/{coin_id}"
         params = {"localization": "false"}
-        response = requests.get(url, params=params)
+        response = requests.get(url, params=params, headers=HEADERS)
         response.raise_for_status()
         data = response.json()
         
@@ -74,7 +80,7 @@ def get_ohlc_data(coin_id, days=1, retries=1):
         try:
             url = f"{COINGECKO_API_BASE}/coins/{coin_id}/ohlc"
             params = {"vs_currency": "usd", "days": days}
-            response = requests.get(url, params=params)
+            response = requests.get(url, params=params, headers=HEADERS)
             response.raise_for_status()
             log_resolution(coin_id, "Higher Accuracy (Hourly Data)", "Success")
             return response.json()
@@ -86,7 +92,7 @@ def get_ohlc_data(coin_id, days=1, retries=1):
     try:
         fallback_url = f"{COINGECKO_API_BASE}/coins/{coin_id}/ohlc"
         fallback_params = {"vs_currency": "usd", "days": 7}
-        fallback_response = requests.get(fallback_url, params=fallback_params)
+        fallback_response = requests.get(fallback_url, params=fallback_params, headers=HEADERS)
         fallback_response.raise_for_status()
         log_resolution(coin_id, "Lower Accuracy (Daily Data)", "Success (Fallback)")
         return fallback_response.json()
@@ -99,7 +105,9 @@ def fetch_multiple_enriched_coins(coin_ids, days=1):
     print_progress_bar(0, len(coin_ids), prefix='Progress:', suffix='Complete', length=50)
     for idx, coin_id in enumerate(coin_ids):
         metadata = get_coin_metadata(coin_id)
+        time.sleep(0.3)
         ohlc = get_ohlc_data(coin_id, days=days)
+        time.sleep(0.3)
         all_data[coin_id] = {
             "metadata": metadata,
             "ohlc": ohlc
