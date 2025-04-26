@@ -1,11 +1,8 @@
-# fetcher.py - v1.4
-
 import requests
 from config import COINGECKO_API_BASE, TOP_N_COINS
 from utils import log_resolution, print_progress_bar
 import time
 
-# Define Top 25 tags whitelist
 TOP_25_TAGS = [
     "real-world-assets", "depin", "defi", "smart-contract-platform", "layer-2", "stablecoin",
     "nft", "artificial-intelligence", "gaming", "metaverse", "oracles", "yield-farming",
@@ -34,7 +31,6 @@ def get_coin_metadata(coin_id):
         response.raise_for_status()
         data = response.json()
         
-        # Determine main category
         categories = data.get("categories", [])
         tags = data.get("tags", [])
 
@@ -48,8 +44,7 @@ def get_coin_metadata(coin_id):
                 main_category = "Layer 1"
             elif "Meme" in categories:
                 main_category = "Meme"
-        
-        # Curate special tags
+
         special_tags = []
         for tag in tags:
             if tag in TOP_25_TAGS:
