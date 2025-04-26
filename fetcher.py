@@ -23,7 +23,7 @@ def get_top_gainers(period="1h"):
         "order": "market_cap_desc",
         "per_page": TOP_N_COINS,
         "page": 1,
-        "sparkline": False,
+        "sparkline": "false",  # Corrected to lowercase string
     }
     response = requests.get(url, params=params, headers=HEADERS)
     response.raise_for_status()
@@ -33,7 +33,6 @@ def get_top_gainers(period="1h"):
     if period == "1h":
         coins.sort(key=lambda x: x.get('price_change_percentage_1h_in_currency', 0), reverse=True)
     elif period == "4h":
-        # Extend later for 4h sorting if needed
         pass
 
     return [coin["id"] for coin in coins[:TOP_N_COINS]]
