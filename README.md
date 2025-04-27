@@ -1,2 +1,2 @@
 # Crypto Signal Scanner
-Diagnostic version with header and API key visibility.
+Visible Diagnostics version.

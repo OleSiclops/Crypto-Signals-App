@@ -14,21 +14,22 @@ def get_top_gainers():
         "sparkline": "false"
     }
     
-    # DIAGNOSTIC: Print API key info and headers
-    print(f"DIAGNOSTIC: API Key Length: {len(COINGECKO_API_KEY)}")
-    print(f"DIAGNOSTIC: API Key Start: {COINGECKO_API_KEY[:6]}...")
-    print(f"DIAGNOSTIC: Headers being sent: {HEADERS}")
-    
+    diagnostics = {}
+    diagnostics["api_key_length"] = len(COINGECKO_API_KEY)
+    diagnostics["api_key_start"] = COINGECKO_API_KEY[:6]
+    diagnostics["headers_sent"] = str(HEADERS)
+
     try:
         response = requests.get(url, params=params, headers=HEADERS)
-        print(f"DIAGNOSTIC: Response Status Code: {response.status_code}")
+        diagnostics["response_status_code"] = response.status_code
         
         if response.status_code != 200:
-            print(f"DIAGNOSTIC: Response Text: {response.text}")
+            diagnostics["response_body"] = response.text
 
         response.raise_for_status()
         coins = response.json()
-        return [coin["id"] for coin in coins[:TOP_N_COINS]]
+        diagnostics["first_coin_id"] = coins[0]["id"] if coins else "No coins returned"
+        return coins, diagnostics
     except Exception as e:
-        print(f"Error fetching top gainers: {e}")
-        return []
+        diagnostics["error"] = str(e)
+        return [], diagnostics

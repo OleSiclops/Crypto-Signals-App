@@ -3,24 +3,35 @@ import streamlit as st
 import pandas as pd
 from streamlit_autorefresh import st_autorefresh
 from fetcher import get_top_gainers
-from indicator_engine import IndicatorEngine
 from config import COINGECKO_API_KEY
 import time
 
-st.set_page_config(page_title="Crypto Diagnostic", layout="wide")
+st.set_page_config(page_title="Crypto Diagnostic Visible", layout="wide")
 
-# Debug - Show API Key Length
-st.sidebar.success(f"API Key Length: {len(COINGECKO_API_KEY)}")
+st.title("🚀 Crypto Signal Dashboard (Visible Diagnostics)")
 
 # Auto-refresh every 120 seconds
 st_autorefresh(interval=120000, key="market_sentiment_refresh")
 
-st.title("🚀 Crypto Signal Dashboard (Diagnostic Mode)")
+# Fetch coins and diagnostic info
+top_coins, diagnostics = get_top_gainers()
 
-top_coins = get_top_gainers()
+with st.sidebar:
+    st.subheader("Diagnostics")
+    st.write(f"API Key Length: {diagnostics.get('api_key_length')}")
+    st.write(f"API Key Start: {diagnostics.get('api_key_start')}")
+    st.write(f"Headers Sent: {diagnostics.get('headers_sent')}")
 
-if not top_coins:
-    st.error("⚠️ Failed to fetch top coins. Please wait and try again.")
-    st.stop()
+st.subheader("Fetch Result")
 
-st.write(f"Fetched Top Coin: {top_coins[0]}")
+if "error" in diagnostics:
+    st.error(f"Error fetching coins: {diagnostics['error']}")
+elif not top_coins:
+    st.warning("⚠️ No coins fetched. Maybe CoinGecko rejected?")
+else:
+    st.success(f"First Top Coin ID: {diagnostics.get('first_coin_id', 'Unknown')}")
+
+st.subheader("HTTP Response Info")
+st.write(f"Response Status Code: {diagnostics.get('response_status_code', 'Unknown')}")
+if "response_body" in diagnostics:
+    st.code(diagnostics["response_body"])
