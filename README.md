@@ -1,1 +1,1 @@
-# Crypto Signal Scanner v4.4 True Gainers Top 10.
+# Crypto Signal Scanner v4.4 Buy-Only Top 20 Strong Buy Signals.

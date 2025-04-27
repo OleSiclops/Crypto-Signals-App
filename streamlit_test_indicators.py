@@ -9,9 +9,9 @@ from utils import format_duration
 from config import COINGECKO_API_KEY
 import time
 
-st.set_page_config(page_title="Crypto Dashboard v4.4", layout="wide")
+st.set_page_config(page_title="Crypto Dashboard v4.4 Buy Only", layout="wide")
 
-st.title("🚀 Crypto Signal Dashboard (Top 10 True Gainers)")
+st.title("🚀 Crypto Signal Dashboard (Top 20 Strong Buy Signals)")
 
 # Auto-refresh every 120 seconds
 st_autorefresh(interval=120000, key="market_sentiment_refresh")
@@ -52,15 +52,15 @@ if btc_change is not None:
 else:
     st.warning("⚠️ Unable to fetch BTC sentiment.")
 
-# Fetch Top 10 Gainers
+# Fetch Top Gainers
 top_coins = get_top_gainers(period=gainer_period)
 
 if not top_coins:
     st.error("⚠️ Failed to fetch top coins. Please wait and try again.")
     st.stop()
 
-# Display results
-st.subheader(f"Top 10 Gainers ({gainer_period})")
+# Scan and keep only BUY signals
+buy_signals = []
 
 for coin_id in top_coins:
     if "Light" in scan_mode:
@@ -69,17 +69,24 @@ for coin_id in top_coins:
         ohlc_data = get_ohlc_data_full(coin_id)
 
     if not ohlc_data:
-        st.warning(f"⚠️ No OHLC data for {coin_id}. Skipping.")
         continue
 
     df = pd.DataFrame(ohlc_data)
     engine = IndicatorEngine(df)
     engine.run_all_indicators()
-    scores = engine.generate_score(debug=True)
-    signal = engine.generate_signal()
+    signal_data = engine.generate_signal()
 
-    with st.container():
-        st.subheader(f"🪙 {coin_id.capitalize()}")
-        st.write(f"Total Score: {scores['total_score']:.2f}")
-        st.write(f"Signal: {signal['signal']}")
-        st.write(f"Reason: {signal['reason']}")
+    if signal_data["signal"] == "BUY":
+        scores = engine.generate_score(debug=True)
+        buy_signals.append((coin_id, scores["total_score"], signal_data["reason"]))
+
+# Display BUY signals (limit 20 max)
+if not buy_signals:
+    st.warning("⚠️ No strong BUY signals detected at this time.")
+else:
+    st.subheader(f"Top {min(20, len(buy_signals))} Strong BUY Signals ({gainer_period})")
+    for coin_id, score, reason in buy_signals[:20]:
+        with st.container():
+            st.subheader(f"🪙 {coin_id.capitalize()}")
+            st.write(f"Total Score: {score:.2f}")
+            st.write(f"Reason: {reason}")
