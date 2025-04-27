@@ -1,31 +1,28 @@
 # fetcher.py
 
 import requests
-from config import COINGECKO_API_BASE, TOP_N_COINS
-from utils import log_resolution
+from config import COINGECKO_API_BASE, TOP_N_COINS, COINGECKO_API_KEY
+from utils import log_resolution, print_progress_bar
+import time
+
+HEADERS = {"x-cg-pro-api-key": COINGECKO_API_KEY}
 
 def get_top_gainers(period="1h"):
     url = f"{COINGECKO_API_BASE}/coins/markets"
     params = {
         "vs_currency": "usd",
-        "order": "percent_change_1h_desc" if period == "1h" else "percent_change_4h_desc",
+        "order": "market_cap_desc",
         "per_page": TOP_N_COINS,
         "page": 1,
-        "price_change_percentage": "1h,4h"
+        "sparkline": "false",
     }
-    response = requests.get(url, params=params)
+    response = requests.get(url, params=params, headers=HEADERS)
     response.raise_for_status()
-    return [coin["id"] for coin in response.json()]
+    coins = response.json()
 
-def get_ohlc_data(coin_id, days=1):
-    try:
-        url = f"{COINGECKO_API_BASE}/coins/{coin_id}/ohlc"
-        params = {"vs_currency": "usd", "days": days}
-        response = requests.get(url, params=params)
-        response.raise_for_status()
-        log_resolution(coin_id, "Higher Accuracy (Hourly Data)", "Success")
-        return response.json()
-    except Exception as e:
-        log_resolution(coin_id, "Higher Accuracy (Hourly Data)", f"Failed: {e}")
-        # Placeholder: Add fallback to daily data here
-        return []
+    if period == "1h":
+        coins.sort(key=lambda x: x.get('price_change_percentage_1h_in_currency', 0), reverse=True)
+    elif period == "4h":
+        pass
+
+    return [coin["id"] for coin in coins[:TOP_N_COINS]]
