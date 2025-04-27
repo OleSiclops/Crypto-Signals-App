@@ -13,12 +13,17 @@ st.set_page_config(page_title="Crypto Dashboard", layout="wide")
 # Debug - Show API Key Length
 st.sidebar.success(f"API Key Length: {len(COINGECKO_API_KEY)}")
 
-# Auto-refresh
-st_autorefresh(interval=60000, key="market_sentiment_refresh")
+# Auto-refresh every 120 seconds
+st_autorefresh(interval=120000, key="market_sentiment_refresh")
 
-st.title("🚀 Crypto Signal Dashboard")
+st.title("🚀 Crypto Signal Dashboard (Safe Refresh)")
 
 top_coins = get_top_gainers()
+
+if not top_coins:
+    st.error("⚠️ Failed to fetch top coins. Please wait and try again.")
+    st.stop()
+
 ohlc_data = get_ohlc_data_light(top_coins[0])
 df = pd.DataFrame(ohlc_data)
 

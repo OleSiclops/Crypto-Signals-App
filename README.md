@@ -1,2 +1,2 @@
 # Crypto Signal Scanner
-Minimal v4.0 patched version.
+Safe v4.0 version with 120s refresh and error handling.

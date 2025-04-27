@@ -13,11 +13,15 @@ def get_top_gainers():
         "page": 1,
         "sparkline": "false"
     }
-    response = requests.get(url, params=params, headers=HEADERS)
-    response.raise_for_status()
-    coins = response.json()
-    return [coin["id"] for coin in coins[:TOP_N_COINS]]
-
+    try:
+        response = requests.get(url, params=params, headers=HEADERS)
+        response.raise_for_status()
+        coins = response.json()
+        return [coin["id"] for coin in coins[:TOP_N_COINS]]
+    except Exception as e:
+        print(f"Error fetching top gainers: {e}")
+        return []
+    
 def get_ohlc_data_light(coin_id, vs_currency="usd", days="1"):
     url = f"{COINGECKO_API_BASE}/coins/{coin_id}/ohlc"
     params = {"vs_currency": vs_currency, "days": days}
