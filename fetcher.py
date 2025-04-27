@@ -6,25 +6,35 @@ HEADERS = {"x-cg-pro-api-key": COINGECKO_API_KEY}
 
 def get_top_gainers(period="1h"):
     url = f"{COINGECKO_API_BASE}/coins/markets"
-    if period == "1h":
-        order_param = "price_change_percentage_1h_desc"
-    elif period == "24h":
-        order_param = "price_change_percentage_24h_desc"
-    else:
-        order_param = "market_cap_desc"
-
     params = {
         "vs_currency": "usd",
-        "order": order_param,
+        "order": "market_cap_desc",
         "per_page": TOP_N_COINS,
         "page": 1,
         "sparkline": "false",
-        "price_change_percentage": "1h,24h"
+        "price_change_percentage": "1h,24h,7d"
     }
     response = requests.get(url, params=params, headers=HEADERS)
     response.raise_for_status()
     coins = response.json()
-    return [coin["id"] for coin in coins[:TOP_N_COINS]]
+
+    if period == "1h":
+        key = "price_change_percentage_1h_in_currency"
+    elif period == "24h":
+        key = "price_change_percentage_24h_in_currency"
+    elif period == "7d":
+        key = "price_change_percentage_7d_in_currency"
+    else:
+        key = "price_change_percentage_24h_in_currency"  # fallback
+
+    # Sort coins manually
+    coins_sorted = sorted(
+        coins,
+        key=lambda x: x.get(key, 0) or 0,
+        reverse=True
+    )
+
+    return [coin["id"] for coin in coins_sorted[:10]]
 
 def get_ohlc_data_light(coin_id, vs_currency="usd", days="1"):
     url = f"{COINGECKO_API_BASE}/coins/{coin_id}/ohlc"

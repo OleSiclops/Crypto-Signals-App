@@ -1,1 +1,1 @@
-# Crypto Signal Scanner v4.4 - Multi Coin Scanner (Top Gainers).
+# Crypto Signal Scanner v4.4 True Gainers Top 10.

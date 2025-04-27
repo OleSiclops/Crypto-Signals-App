@@ -11,7 +11,7 @@ import time
 
 st.set_page_config(page_title="Crypto Dashboard v4.4", layout="wide")
 
-st.title("🚀 Crypto Signal Dashboard (Top 5 Gainers)")
+st.title("🚀 Crypto Signal Dashboard (Top 10 True Gainers)")
 
 # Auto-refresh every 120 seconds
 st_autorefresh(interval=120000, key="market_sentiment_refresh")
@@ -24,7 +24,7 @@ with st.sidebar:
     )
     gainer_period = st.radio(
         "Top Gainers Period:",
-        ("1h", "24h")
+        ("1h", "24h", "7d")
     )
     st.write(f"Using {scan_mode} mode scanning {gainer_period} gainers.")
 
@@ -52,7 +52,7 @@ if btc_change is not None:
 else:
     st.warning("⚠️ Unable to fetch BTC sentiment.")
 
-# Fetch Top 5 Gainers
+# Fetch Top 10 Gainers
 top_coins = get_top_gainers(period=gainer_period)
 
 if not top_coins:
@@ -60,9 +60,9 @@ if not top_coins:
     st.stop()
 
 # Display results
-st.subheader(f"Top 5 Gainers ({gainer_period})")
+st.subheader(f"Top 10 Gainers ({gainer_period})")
 
-for coin_id in top_coins[:5]:
+for coin_id in top_coins:
     if "Light" in scan_mode:
         ohlc_data = get_ohlc_data_light(coin_id)
     else:
