@@ -14,7 +14,7 @@ st.set_page_config(page_title="Crypto Signal Dashboard", layout="wide")
 # Auto-refresh every 60 seconds
 st_autorefresh(interval=60000, key="market_sentiment_refresh")
 
-st.title("🚀 Crypto Technical Scorecards + Signal Detector (v3.3 - Gauge Fix)")
+st.title("🚀 Crypto Technical Scorecards + Signal Detector (v3.3 Fine-Scale Gauge)")
 
 # Session state setup
 if "launch_time" not in st.session_state:
@@ -39,8 +39,10 @@ elapsed_time_str = format_duration(elapsed_seconds)
 # Display market status text
 st.markdown(f"### 🌎 Market Status: **{sentiment} ({btc_change:+.2f}%)** — {elapsed_time_str}")
 
-# Draw improved fuel gauge
-gauge_value = {"Bullish": 90, "Consolidating": 50, "Bearish": 10}.get(sentiment, 50)
+# Fine-scale gauge mapping
+# BTC 1h change from -5% to +5% maps to 0-100 gauge
+btc_change_clamped = max(-5.0, min(5.0, btc_change))
+gauge_value = (btc_change_clamped + 5) * (100 / 10)
 gauge_color = {"Bullish": "green", "Consolidating": "yellow", "Bearish": "red"}.get(sentiment, "yellow")
 
 fig = go.Figure(go.Indicator(
@@ -48,20 +50,21 @@ fig = go.Figure(go.Indicator(
     value=gauge_value,
     number={'suffix': "%"},
     gauge={
-        'axis': {'range': [0, 100]},
-        'bar': {'color': "black", 'thickness': 0.3}, # thinner black needle
+        'axis': {'range': [0, 100], 'tickwidth': 1, 'tickcolor': "darkblue"},
+        'bar': {'color': "black", 'thickness': 0.3},
+        'bgcolor': "white",
         'steps': [
             {'range': [0, 33], 'color': "red"},
             {'range': [33, 66], 'color': "yellow"},
             {'range': [66, 100], 'color': "green"}
         ],
         'threshold': {
-            'line': {'color': gauge_color, 'width': 8},
+            'line': {'color': gauge_color, 'width': 6},
             'thickness': 0.8,
             'value': gauge_value
         }
     },
-    title={'text': "Market Sentiment Gauge"}
+    title={'text': "Market Sentiment Gauge (Fine Scale)"}
 ))
 
 st.plotly_chart(fig, use_container_width=True)
