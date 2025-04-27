@@ -6,9 +6,13 @@ import plotly.graph_objects as go
 from indicator_engine import IndicatorEngine
 from fetcher import get_top_gainers, get_ohlc_data_light, get_ohlc_data_full
 from utils import format_duration
+from config import COINGECKO_API_KEY
 import time
 
 st.set_page_config(page_title="Crypto Signal Dashboard", layout="wide")
+
+# Debug: Show API Key info in sidebar
+st.sidebar.success(f"API Key Preview: {COINGECKO_API_KEY[:6]}... (length: {len(COINGECKO_API_KEY)})")
 
 # Auto-refresh every 60 seconds
 st_autorefresh(interval=60000, key="market_sentiment_refresh")
