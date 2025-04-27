@@ -14,7 +14,7 @@ st.set_page_config(page_title="Crypto Signal Dashboard", layout="wide")
 # Auto-refresh every 60 seconds
 st_autorefresh(interval=60000, key="market_sentiment_refresh")
 
-st.title("🚀 Crypto Technical Scorecards + Signal Detector (v3.3)")
+st.title("🚀 Crypto Technical Scorecards + Signal Detector (v3.3 - Gauge Fix)")
 
 # Session state setup
 if "launch_time" not in st.session_state:
@@ -39,30 +39,36 @@ elapsed_time_str = format_duration(elapsed_seconds)
 # Display market status text
 st.markdown(f"### 🌎 Market Status: **{sentiment} ({btc_change:+.2f}%)** — {elapsed_time_str}")
 
-# Draw fuel gauge
+# Draw improved fuel gauge
 gauge_value = {"Bullish": 90, "Consolidating": 50, "Bearish": 10}.get(sentiment, 50)
 gauge_color = {"Bullish": "green", "Consolidating": "yellow", "Bearish": "red"}.get(sentiment, "yellow")
 
 fig = go.Figure(go.Indicator(
-    mode="gauge+number",
+    mode="gauge+number+delta",
     value=gauge_value,
+    number={'suffix': "%"},
     gauge={
         'axis': {'range': [0, 100]},
-        'bar': {'color': gauge_color},
+        'bar': {'color': "black", 'thickness': 0.3}, # thinner black needle
         'steps': [
             {'range': [0, 33], 'color': "red"},
             {'range': [33, 66], 'color': "yellow"},
             {'range': [66, 100], 'color': "green"}
-        ]
+        ],
+        'threshold': {
+            'line': {'color': gauge_color, 'width': 8},
+            'thickness': 0.8,
+            'value': gauge_value
+        }
     },
-    title={'text': f"Market Sentiment Gauge"}
+    title={'text': "Market Sentiment Gauge"}
 ))
 
 st.plotly_chart(fig, use_container_width=True)
 
 st.markdown("---")
 
-# Dummy OHLC data for sample
+# Dummy OHLC data
 sample_data = {
     "timestamp": pd.date_range(end=pd.Timestamp.now(), periods=50, freq="H").astype(int) / 10**6,
     "open": [100 + i*0.5 for i in range(50)],
