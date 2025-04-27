@@ -21,7 +21,7 @@ def get_top_gainers():
     except Exception as e:
         print(f"Error fetching top gainers: {e}")
         return []
-    
+
 def get_ohlc_data_light(coin_id, vs_currency="usd", days="1"):
     url = f"{COINGECKO_API_BASE}/coins/{coin_id}/ohlc"
     params = {"vs_currency": vs_currency, "days": days}
@@ -40,3 +40,23 @@ def get_ohlc_data_light(coin_id, vs_currency="usd", days="1"):
     except Exception as e:
         print(f"Error fetching OHLC: {e}")
         return []
+
+def get_btc_market_sentiment():
+    url = f"{COINGECKO_API_BASE}/coins/bitcoin"
+    params = {
+        "localization": "false",
+        "tickers": "false",
+        "market_data": "true",
+        "community_data": "false",
+        "developer_data": "false",
+        "sparkline": "false"
+    }
+    try:
+        response = requests.get(url, params=params, headers=HEADERS)
+        response.raise_for_status()
+        data = response.json()
+        btc_change_1h = data['market_data']['price_change_percentage_1h_in_currency']['usd']
+        return btc_change_1h
+    except Exception as e:
+        print(f"Error fetching BTC market sentiment: {e}")
+        return None
