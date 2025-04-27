@@ -1,2 +1,2 @@
 # Crypto Signal Scanner
-Visible Diagnostics version.
+v4.2 - Fully Pro API Ready.
