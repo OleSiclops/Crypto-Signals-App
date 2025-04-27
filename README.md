@@ -1,2 +1,2 @@
 # Crypto Signal Scanner
-v4.1 with BTC Market Sentiment Gauge.
+Diagnostic version with header and API key visibility.

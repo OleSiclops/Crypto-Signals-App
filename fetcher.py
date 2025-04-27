@@ -13,50 +13,22 @@ def get_top_gainers():
         "page": 1,
         "sparkline": "false"
     }
+    
+    # DIAGNOSTIC: Print API key info and headers
+    print(f"DIAGNOSTIC: API Key Length: {len(COINGECKO_API_KEY)}")
+    print(f"DIAGNOSTIC: API Key Start: {COINGECKO_API_KEY[:6]}...")
+    print(f"DIAGNOSTIC: Headers being sent: {HEADERS}")
+    
     try:
         response = requests.get(url, params=params, headers=HEADERS)
+        print(f"DIAGNOSTIC: Response Status Code: {response.status_code}")
+        
+        if response.status_code != 200:
+            print(f"DIAGNOSTIC: Response Text: {response.text}")
+
         response.raise_for_status()
         coins = response.json()
         return [coin["id"] for coin in coins[:TOP_N_COINS]]
     except Exception as e:
         print(f"Error fetching top gainers: {e}")
         return []
-
-def get_ohlc_data_light(coin_id, vs_currency="usd", days="1"):
-    url = f"{COINGECKO_API_BASE}/coins/{coin_id}/ohlc"
-    params = {"vs_currency": vs_currency, "days": days}
-    try:
-        response = requests.get(url, params=params, headers=HEADERS)
-        response.raise_for_status()
-        ohlc_raw = response.json()
-        return [{
-            "timestamp": entry[0],
-            "open": entry[1],
-            "high": entry[2],
-            "low": entry[3],
-            "close": entry[4],
-            "volume": None
-        } for entry in ohlc_raw]
-    except Exception as e:
-        print(f"Error fetching OHLC: {e}")
-        return []
-
-def get_btc_market_sentiment():
-    url = f"{COINGECKO_API_BASE}/coins/bitcoin"
-    params = {
-        "localization": "false",
-        "tickers": "false",
-        "market_data": "true",
-        "community_data": "false",
-        "developer_data": "false",
-        "sparkline": "false"
-    }
-    try:
-        response = requests.get(url, params=params, headers=HEADERS)
-        response.raise_for_status()
-        data = response.json()
-        btc_change_1h = data['market_data']['price_change_percentage_1h_in_currency']['usd']
-        return btc_change_1h
-    except Exception as e:
-        print(f"Error fetching BTC market sentiment: {e}")
-        return None
