@@ -4,6 +4,7 @@ import pandas as pd
 import plotly.graph_objects as go
 from streamlit_autorefresh import st_autorefresh
 import requests
+import ta
 
 COINGECKO_API_BASE = "https://pro-api.coingecko.com/api/v3"
 TOP_N_COINS = 300
@@ -40,6 +41,17 @@ def get_top_gainers(period="1h"):
 
     return [coin["id"] for coin in coins_sorted[:TOP_N_COINS]]
 
+def get_ohlc_data_light(coin_id, vs_currency="usd", days="1"):
+    url = f"{COINGECKO_API_BASE}/coins/{coin_id}/ohlc"
+    params = {"vs_currency": vs_currency, "days": days}
+    try:
+        response = requests.get(url, params=params, headers=HEADERS)
+        response.raise_for_status()
+        ohlc_raw = response.json()
+        return [entry for entry in ohlc_raw]
+    except:
+        return []
+
 def get_btc_market_sentiment():
     url = f"{COINGECKO_API_BASE}/coins/bitcoin"
     params = {
@@ -54,6 +66,28 @@ def get_btc_market_sentiment():
     response.raise_for_status()
     data = response.json()
     return data['market_data']['price_change_percentage_1h_in_currency']['usd']
+
+def run_indicators(ohlc_data):
+    df = pd.DataFrame(ohlc_data, columns=["timestamp", "open", "high", "low", "close"])
+    df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms', errors='coerce')
+    df.set_index('timestamp', inplace=True)
+    if len(df) < 15:
+        return None, None
+    rsi = ta.momentum.RSIIndicator(close=df['close'], window=14).rsi()
+    latest_rsi = rsi.dropna().iloc[-1] if not rsi.dropna().empty else None
+    if latest_rsi is None:
+        return None, None
+    rsi_score = max(0, min(100, (70 - latest_rsi) * (100 / 40)))
+    if rsi_score >= 70:
+        signal = "BUY"
+        reason = "Strong bullish technicals."
+    elif 50 <= rsi_score < 70:
+        signal = "WATCH"
+        reason = "Moderate technicals."
+    else:
+        signal = "NO TRADE"
+        reason = "Weak technicals."
+    return rsi_score, reason if signal == "BUY" else None
 
 st.set_page_config(page_title="Crypto Dashboard v4.5", layout="wide")
 st.title("🚀 Crypto Signal Dashboard (Strong Buy Cards)")
@@ -84,29 +118,26 @@ if not top_coins:
     st.error("⚠️ Failed to fetch top coins. Please wait and try again.")
     st.stop()
 
-# Dummy placeholder: here you'd normally scan with IndicatorEngine, etc.
-# I'll skip scanning for dummy strong BUYs here to demonstrate layout.
+buy_signals = []
 
-# For now, simulate 5 example strong BUYs:
-example_buys = [
-    ("Bitcoin", 85.3, "Strong bullish technicals."),
-    ("Ethereum", 82.1, "Strong bullish technicals."),
-    ("Solana", 78.7, "Strong bullish technicals."),
-    ("Ripple", 76.4, "Strong bullish technicals."),
-    ("Dogecoin", 74.9, "Strong bullish technicals.")
-]
+for coin_id in top_coins:
+    ohlc_data = get_ohlc_data_light(coin_id)
+    if not ohlc_data:
+        continue
+    score, reason = run_indicators(ohlc_data)
+    if score is not None and reason is not None:
+        buy_signals.append((coin_id, score, reason))
 
-buy_signals = example_buys
+buy_signals = sorted(buy_signals, key=lambda x: x[1], reverse=True)
 
 if not buy_signals:
     st.warning("⚠️ No strong BUY signals detected at this time.")
 else:
     st.subheader(f"Top {min(20, len(buy_signals))} Strong BUY Signals ({gainer_period})")
-
     cols = st.columns(3)
     for idx, (coin_id, score, reason) in enumerate(buy_signals[:20]):
         with cols[idx % 3]:
             with st.container():
-                st.markdown(f"### 🪙 {coin_id}")
+                st.markdown(f"### 🪙 {coin_id.capitalize()}")
                 st.metric(label="Total Score", value=f"{score:.2f}")
                 st.success(f"✅ {reason}")
