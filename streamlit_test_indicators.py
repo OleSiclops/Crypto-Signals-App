@@ -255,14 +255,13 @@ for i, sig in enumerate([s for s in signals[:20] if s['buy_score'] >= 60]):
                 value = int(v) if v is not None else 'N/A'
                 subscores_html += f"<li><strong>{k}:</strong> {value}</li>"
             subscores_html += "</ul>"
+            st.markdown("&nbsp;", unsafe_allow_html=True)
             st.markdown("**📊 Subscores:**" + subscores_html, unsafe_allow_html=True)
 
             st.markdown("**🧠 Analysis:**")
             st.markdown(sig["analysis"])
             st.markdown("**🧠 Analysis:**")
             st.markdown(sig["analysis"])
-
-
 
 
 
