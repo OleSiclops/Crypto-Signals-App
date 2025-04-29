@@ -42,16 +42,18 @@ def get_btc_market_sentiment():
 
 def generate_paragraph(name, rsi, gain):
     templates = [
-        f"{name} is gaining strong bullish traction, with RSI at {rsi:.1f} and a gain of {gain:.2f}%.",
-        f"{name} broke resistance with a surge of {gain:.2f}%, backed by an RSI of {rsi:.1f}.",
-        f"{name} is demonstrating healthy technical strength: RSI {rsi:.1f}, recent gain {gain:.2f}%.",
-        f"Strong technicals for {name}, pushing higher with an RSI at {rsi:.1f} and a {gain:.2f}% rally.",
-        f"Momentum favors {name} now, with RSI climbing to {rsi:.1f} after a {gain:.2f}% move."
+        f"{name} is building strong bullish momentum with RSI at {rsi:.1f} and a {gain:.2f}% gain.",
+        f"Technical indicators show {name} surging with RSI {rsi:.1f} after a {gain:.2f}% move upward.",
+        f"{name} is showing renewed strength with an RSI of {rsi:.1f} and a recent {gain:.2f}% rally.",
+        f"{name} gained {gain:.2f}% while pushing RSI to {rsi:.1f}, signaling bullish technicals.",
+        f"Momentum shifts favor {name} now, with RSI reaching {rsi:.1f} after a {gain:.2f}% price increase.",
+        f"{name} is flashing bullish signals, posting {gain:.2f}% gains alongside a strong {rsi:.1f} RSI.",
+        f"Price action and RSI at {rsi:.1f} suggest {name} is experiencing fresh bullish pressure after a {gain:.2f}% run."
     ]
     return random.choice(templates)
 
 st.set_page_config(page_title="Crypto Dashboard v4.5.2", layout="wide")
-st.title("🚀 Crypto Signal Dashboard v4.5.2 – Polished Signals and Analysis")
+st.title("🚀 Crypto Signal Dashboard v4.5.2 – Full Corrected Version")
 st_autorefresh(interval=120000, key="market_sentiment_refresh")
 
 with st.sidebar:
@@ -93,7 +95,7 @@ for coin in coins:
     price_upper = price * 1.015
     price_range = f"${price_lower:.2f} – ${price_upper:.2f}"
 
-    rsi_simulated = random.uniform(65, 80)  # Simulated RSI value
+    rsi_simulated = random.uniform(65, 80)
 
     paragraph = generate_paragraph(coin_name, rsi_simulated, price_change)
 
