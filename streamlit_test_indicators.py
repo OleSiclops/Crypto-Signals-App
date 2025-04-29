@@ -6,10 +6,37 @@ import requests
 import random
 import ta
 from streamlit_autorefresh import st_autorefresh
+from indicator_engine_v2 import IndicatorEngineV2
 
 COINGECKO_API_BASE = "https://pro-api.coingecko.com/api/v3"
-TOP_N_COINS = 300
+TOP_N_COINS = 50
 HEADERS = {"x-cg-pro-api-key": st.secrets["general"]["COINGECKO_API_KEY"]}
+
+def fetch_btc_24h_prices():
+    url = f"{COINGECKO_API_BASE}/coins/bitcoin/market_chart"
+    params = {"vs_currency": "usd", "days": "1"}
+    try:
+        response = requests.get(url, params=params, headers=HEADERS, timeout=5)
+        response.raise_for_status()
+        data = response.json().get("prices", [])
+        df = pd.DataFrame(data, columns=["timestamp", "price"])
+        df["timestamp"] = pd.to_datetime(df["timestamp"], unit="ms")
+        return df
+    except Exception as e:
+        st.warning("⚠️ Failed to fetch BTC 24h prices. Skipping chart...")
+        return pd.DataFrame()
+
+def get_btc_market_sentiment():
+    url = f"{COINGECKO_API_BASE}/coins/bitcoin"
+    params = {"localization": "false", "tickers": "false", "market_data": "true"}
+    try:
+        response = requests.get(url, params=params, headers=HEADERS, timeout=5)
+        response.raise_for_status()
+        data = response.json()
+        return data['market_data']['price_change_percentage_1h_in_currency']['usd']
+    except:
+        st.warning("⚠️ Failed to fetch BTC sentiment. Showing neutral gauge.")
+        return 0.0
 
 def get_top_gainers(period="1h"):
     url = f"{COINGECKO_API_BASE}/coins/markets"
@@ -21,142 +48,201 @@ def get_top_gainers(period="1h"):
         "sparkline": "false",
         "price_change_percentage": "1h,24h,7d"
     }
-    response = requests.get(url, params=params, headers=HEADERS)
+    response = requests.get(url, params=params, headers=HEADERS, timeout=5)
     response.raise_for_status()
     return response.json()
 
-def get_ohlc_data_light(coin_id, vs_currency="usd", days="1"):
-    url = f"{COINGECKO_API_BASE}/coins/{coin_id}/ohlc"
-    params = {"vs_currency": vs_currency, "days": days}
-    try:
-        response = requests.get(url, params=params, headers=HEADERS)
-        response.raise_for_status()
-        return response.json()
-    except:
-        return []
+def get_ohlc_data(coin_id, use_market_chart=False, vs_currency="usd", days="1"):
+    if use_market_chart:
+        url = f"{COINGECKO_API_BASE}/coins/{coin_id}/market_chart"
+        params = {"vs_currency": vs_currency, "days": days}
+        try:
+            response = requests.get(url, params=params, headers=HEADERS, timeout=5)
+            response.raise_for_status()
+            prices = response.json().get("prices", [])
+            volumes = response.json().get("total_volumes", [])
+            df = pd.DataFrame(prices, columns=["timestamp", "price"])
+            df["volume"] = [v[1] for v in volumes]
+            df["timestamp"] = pd.to_datetime(df["timestamp"], unit="ms")
+            df["open"] = df["high"] = df["low"] = df["close"] = df["price"]
+            return df[["timestamp", "open", "high", "low", "close", "volume"]]
+        except:
+            return pd.DataFrame()
+    else:
+        url = f"{COINGECKO_API_BASE}/coins/{coin_id}/ohlc"
+        params = {"vs_currency": vs_currency, "days": days}
+        try:
+            response = requests.get(url, params=params, headers=HEADERS, timeout=5)
+            response.raise_for_status()
+            ohlc = response.json()
+            df = pd.DataFrame(ohlc, columns=["timestamp", "open", "high", "low", "close"])
+            df["timestamp"] = pd.to_datetime(df["timestamp"], unit="ms")
+            return df
+        except:
+            return pd.DataFrame()
 
-def get_ohlc_data_full(coin_id, vs_currency="usd", days="1"):
-    url = f"{COINGECKO_API_BASE}/coins/{coin_id}/market_chart"
-    params = {"vs_currency": vs_currency, "days": days}
-    try:
-        response = requests.get(url, params=params, headers=HEADERS)
-        response.raise_for_status()
-        prices = response.json().get("prices", [])
-        return [[entry[0], entry[1], entry[1], entry[1], entry[1]] for entry in prices]
-    except:
-        return []
+def plot_btc_chart(df):
+    if df.empty:
+        st.warning("No BTC price data to display.")
+        return
+    df.set_index("timestamp", inplace=True)
+    df["SMA_12h"] = df["price"].rolling(window=12).mean()
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=df.index, y=df["price"], mode="lines", name="BTC Price"))
+    fig.add_trace(go.Scatter(x=df.index, y=df["SMA_12h"], mode="lines", name="12h SMA", line=dict(dash="dot")))
+    fig.update_layout(title="BTC 24h Price Chart with 12h SMA", height=350)
+    st.plotly_chart(fig, use_container_width=True)
 
-def get_btc_market_sentiment():
-    url = f"{COINGECKO_API_BASE}/coins/bitcoin"
-    params = {
-        "localization": "false",
-        "tickers": "false",
-        "market_data": "true",
-        "community_data": "false",
-        "developer_data": "false",
-        "sparkline": "false"
-    }
-    response = requests.get(url, params=params, headers=HEADERS)
-    response.raise_for_status()
-    data = response.json()
-    return data['market_data']['price_change_percentage_1h_in_currency']['usd']
+def generate_human_analysis(coin, scores):
+    phrases = []
+    if scores["RSI"] is not None:
+        if scores["RSI"] > 75:
+            phrases.append(f"RSI suggests {coin} may be approaching overbought territory.")
+        elif scores["RSI"] < 30:
+            phrases.append(f"{coin} appears oversold on RSI, indicating potential upside.")
+        else:
+            phrases.append(f"RSI for {coin} is neutral, showing room for movement.")
 
-def generate_paragraph(name, rsi, gain):
-    templates = [
-        f"{name} is building strong bullish momentum with RSI at {rsi:.1f} and a {gain:.2f}% gain.",
-        f"Technical indicators show {name} surging with RSI {rsi:.1f} after a {gain:.2f}% move upward.",
-        f"{name} is showing renewed strength with an RSI of {rsi:.1f} and a recent {gain:.2f}% rally.",
-        f"{name} gained {gain:.2f}% while pushing RSI to {rsi:.1f}, signaling bullish technicals.",
-        f"Momentum shifts favor {name} now, with RSI reaching {rsi:.1f} after a {gain:.2f}% price increase.",
-        f"{name} is flashing bullish signals, posting {gain:.2f}% gains alongside a strong {rsi:.1f} RSI.",
-        f"Price action and RSI at {rsi:.1f} suggest {name} is experiencing fresh bullish pressure after a {gain:.2f}% run."
-    ]
-    return random.choice(templates)
+    if scores["MACD"] == 100:
+        phrases.append("MACD just crossed bullishly, a classic buy trigger.")
+    elif scores["MACD"] == 30:
+        phrases.append("MACD is flat or bearish, offering no clear signal.")
 
-st.set_page_config(page_title="Crypto Dashboard v4.5.2", layout="wide")
-st.title("🚀 Crypto Signal Dashboard v4.5.2 – Final with Scan Toggle")
+    if scores["EMA"] == 100:
+        phrases.append(f"{coin} is trading above its 50 EMA, suggesting bullish momentum.")
+    elif scores["EMA"] == 30:
+        phrases.append(f"{coin} is trending below its 50 EMA, which may act as resistance.")
+
+    if scores["Volume"] is not None:
+        if scores["Volume"] >= 100:
+            phrases.append("Volume is surging above average, confirming strong interest.")
+        elif scores["Volume"] >= 60:
+            phrases.append("Volume is slightly above average, supporting the move.")
+        else:
+            phrases.append("Current volume is below average, so momentum may be lacking.")
+
+    if scores["ADX"] is not None:
+        if scores["ADX"] >= 60:
+            phrases.append("ADX shows the trend is gaining strength.")
+        else:
+            phrases.append("ADX suggests trend strength is moderate or weak.")
+
+    return " ".join(random.sample(phrases, min(4, len(phrases))))
+
+
+def fmt(price):
+    if price >= 1:
+        return f"${price:.2f}"
+    elif price >= 0.1:
+        return f"${price:.3f}"
+    elif price >= 0.01:
+        return f"${price:.4f}"
+    else:
+        return f"${price:.5f}"
+
+
+st.set_page_config(page_title="Crypto Signal Dashboard v4.5.6", layout="wide")
+st.title("🚀 Crypto Signal Dashboard v4.5.6 – Humanized Analysis")
 st_autorefresh(interval=120000, key="market_sentiment_refresh")
 
+col1, col2 = st.columns([2, 1])
+with col1:
+    btc_df = fetch_btc_24h_prices()
+    plot_btc_chart(btc_df)
+with col2:
+    btc_change = get_btc_market_sentiment()
+    btc_gauge = (max(-5.0, min(5.0, btc_change)) + 5) * 10
+    fig = go.Figure(go.Indicator(
+        mode="gauge+number+delta",
+        value=btc_gauge,
+        number={'suffix': "%"},
+        gauge={'axis': {'range': [0, 100]},
+               'bar': {'color': "black"},
+               'steps': [{'range': [0, 33], 'color': "red"},
+                         {'range': [33, 66], 'color': "yellow"},
+                         {'range': [66, 100], 'color': "green"}]},
+        title={'text': "BTC 1h Sentiment"}
+    ))
+    st.plotly_chart(fig, use_container_width=True)
+
 with st.sidebar:
-    scan_mode = st.radio("Scanning Mode:", ("🛩️ Light Scan (1h)", "🧠 Full Scan (4h)"))
-    gainer_period = st.radio("Top Gainers Period:", ("1h", "24h", "7d"))
+    scan_mode = st.radio("Scan Mode:", ["🛩️ Light (1h)", "🧠 Full (4h)"])
+    period = st.radio("Top Gainers Period:", ["1h", "24h", "7d"])
 
-btc_change = get_btc_market_sentiment()
-btc_change_clamped = max(-5.0, min(5.0, btc_change))
-gauge_value = (btc_change_clamped + 5) * (100 / 10)
-fig = go.Figure(go.Indicator(
-    mode="gauge+number+delta",
-    value=gauge_value,
-    number={'suffix': "%"},
-    gauge={'axis': {'range': [0, 100]},
-           'bar': {'color': "black", 'thickness': 0.3},
-           'steps': [{'range': [0, 33], 'color': "red"},
-                     {'range': [33, 66], 'color': "yellow"},
-                     {'range': [66, 100], 'color': "green"}]},
-    title={'text': "Market Sentiment (BTC 1h % Change)"}
-))
-st.plotly_chart(fig, use_container_width=True)
+use_market_chart = "Full" in scan_mode
+coins = get_top_gainers(period=period)
+signals = []
 
-coins = get_top_gainers(period=gainer_period)
-buy_signals = []
+
+def is_stablecoin(coin):
+    stable_keywords = ["usd", "usdt", "usdc", "tether", "dai", "busd", "stable"]
+    name = coin['name'].lower()
+    symbol = coin['symbol'].lower()
+    return any(word in name or word in symbol for word in stable_keywords)
 
 for coin in coins:
-    coin_name = coin["name"]
-    coin_symbol = coin["symbol"].upper()
-    coin_logo = coin["image"]
-    price = coin["current_price"]
-    price_change = coin.get(f"price_change_percentage_{gainer_period}_in_currency", 0)
-
-    if price_change is None:
+    if is_stablecoin(coin):
         continue
 
-    if "Light" in scan_mode:
-        ohlc_data = get_ohlc_data_light(coin["id"])
-    else:
-        ohlc_data = get_ohlc_data_full(coin["id"])
-
-    if not ohlc_data or len(ohlc_data) < 3:
+    df = get_ohlc_data(coin['id'], use_market_chart=use_market_chart)
+    if df.empty or len(df) < 15:
         continue
 
-    df = pd.DataFrame(ohlc_data, columns=["timestamp", "open", "high", "low", "close"])
-    df["timestamp"] = pd.to_datetime(df["timestamp"], unit="ms")
-    df.set_index("timestamp", inplace=True)
+    engine = IndicatorEngineV2(df)
+    subscores = engine.calculate_all()
+    buy_score = engine.calculate_weighted_score()
+    paragraph = generate_human_analysis(coin['name'], subscores)
 
-    rsi = ta.momentum.RSIIndicator(close=df["close"], window=14).rsi().dropna()
-    if rsi.empty:
-        continue
+    signals.append({
+        "name": coin["name"],
+        "symbol": coin["symbol"].upper(),
+        "image": coin["image"],
+        "price": coin["current_price"],
+        "gain": coin.get(f"price_change_percentage_{period}_in_currency", 0.0),
+        "buy_score": buy_score,
+        "subscores": subscores,
+        "analysis": paragraph
+    })
 
-    rsi_val = rsi.iloc[-1]
-    score = max(0, min(100, (70 - rsi_val) * (100 / 40)))
-    recommended_entry = f"${price:.2f}"
-    price_lower = price * 0.985
-    price_upper = price * 1.015
-    price_range = f"${price_lower:.2f} – ${price_upper:.2f}"
+signals = sorted(signals, key=lambda x: x["buy_score"], reverse=True)
 
-    paragraph = generate_paragraph(coin_name, rsi_val, price_change)
-
-    buy_signals.append((coin_name, coin_symbol, coin_logo, score, rsi_val, price_change, paragraph, recommended_entry, price_range))
-
-buy_signals = sorted(buy_signals, key=lambda x: x[3], reverse=True)
-
-if not buy_signals:
-    st.warning("⚠️ No strong BUY signals detected at this time.")
+if not signals:
+    st.warning("⚠️ No qualifying signals at the moment.")
 else:
-    st.subheader(f"Top {min(20, len(buy_signals))} Strong BUY Signals ({gainer_period})")
-
+    st.subheader(f"Top {min(20, len(signals))} BUY Signals")
     cols = st.columns(3)
-    for idx, (coin_name, coin_symbol, coin_logo, score, rsi_score, gain, paragraph, recommended_entry, price_range) in enumerate(buy_signals[:20]):
-        with cols[idx % 3]:
+    for i, sig in enumerate(signals[:20]):
+        with cols[i % 3]:
             with st.container(border=True):
                 col1, col2 = st.columns([1, 5])
                 with col1:
-                    st.image(coin_logo, width=40)
+                    st.image(sig["image"], width=40)
                 with col2:
-                    st.markdown(f"**{coin_name} ({coin_symbol})**")
-                st.metric(label="Buy Score", value=f"{score:.1f}")
-                st.metric(label="Recommended Entry", value=recommended_entry)
-                st.metric(label="Buy Price Range", value=price_range)
-                st.markdown(paragraph)
-                st.markdown("📊 **Indicators Used:**")
-                st.markdown(f"- RSI: {rsi_score:.1f}")
-                st.markdown(f"- Price Change ({gainer_period}): {gain:.2f}%")
+                    st.markdown(f"**{sig['name']} ({sig['symbol']})**")
+                
+    score = sig['buy_score']
+    if score >= 75:
+        st.markdown("🔥 **Strong Buy – Buy Now**")
+    elif score >= 60:
+        st.markdown("✅ **Moderate Buy**")
+    else:
+        st.markdown("⚠️ **Weak Signal – Hold**")
+    st.metric(label="Buy Score", value=f"{score:.1f}")
+
+                st.metric(label="Price", value=f"${sig['price']:.2f}")
+                
+    st.metric(label="Change", value=f"{sig['gain']:.2f}%")
+
+    # Dynamic price formatting based on value
+    def fmt(price):
+        if price >= 1: return f"${price:.2f}"
+        elif price >= 0.1: return f"${price:.3f}"
+        elif price >= 0.01: return f"${price:.4f}"
+        else: return f"${price:.5f}"
+
+    st.markdown(f"**Buy Price:** {fmt(sig['buy_price'])}")
+    st.markdown(f"**Buy Range:** {fmt(sig['buy_range'][0])} – {fmt(sig['buy_range'][1])}")
+
+                st.markdown("**📊 Subscores:** " + ", ".join([f"{k}: {int(v) if v is not None else 'N/A'}" for k, v in sig["subscores"].items()]))
+                st.markdown("**🧠 Analysis:**")
+                st.markdown(sig["analysis"])
