@@ -229,8 +229,7 @@ else:
         st.markdown("⚠️ **Weak Signal – Hold**")
     st.metric(label="Buy Score", value=f"{score:.1f}")
 
-                st.metric(label="Price", value=f"${sig['price']:.2f}")
-                
+                                
     st.metric(label="Change", value=f"{sig['gain']:.2f}%")
 
     # Dynamic price formatting based on value
