@@ -212,36 +212,26 @@ else:
     st.subheader(f"Top {min(20, len(signals))} BUY Signals")
     cols = st.columns(3)
     for i, sig in enumerate(signals[:20]):
-        with cols[i % 3]:
-            with st.container(border=True):
-                col1, col2 = st.columns([1, 5])
-                with col1:
-                    st.image(sig["image"], width=40)
-                with col2:
-                    st.markdown(f"**{sig['name']} ({sig['symbol']})**")
-                
-    score = sig['buy_score']
-    if score >= 75:
-        st.markdown("🔥 **Strong Buy – Buy Now**")
-    elif score >= 60:
-        st.markdown("✅ **Moderate Buy**")
-    else:
-        st.markdown("⚠️ **Weak Signal – Hold**")
-    st.metric(label="Buy Score", value=f"{score:.1f}")
+    with cols[i % 3]:
+        with st.container(border=True):
+            col1, col2 = st.columns([1, 5])
+            with col1:
+                st.image(sig["image"], width=40)
+            with col2:
+                st.markdown(f"**{sig['name']} ({sig['symbol']})**")
 
-                                
-    st.metric(label="Change", value=f"{sig['gain']:.2f}%")
+            score = sig['buy_score']
+            if score >= 75:
+                st.markdown("🔥 **Strong Buy – Buy Now**")
+            elif score >= 60:
+                st.markdown("✅ **Moderate Buy**")
+            else:
+                st.markdown("⚠️ **Weak Signal – Hold**")
+            
+            st.metric(label="Buy Score", value=f"{score:.1f}")
+            st.markdown(f"**Buy Price:** {fmt(sig['buy_price'])}")
+            st.markdown(f"**Buy Range:** {fmt(sig['buy_range'][0])} – {fmt(sig['buy_range'][1])}")
+            st.markdown("**📊 Subscores:** " + ", ".join([f"{k}: {int(v) if v is not None else 'N/A'}" for k, v in sig["subscores"].items()]))
+            st.markdown("**🧠 Analysis:**")
+            st.markdown(sig["analysis"])
 
-    # Dynamic price formatting based on value
-    def fmt(price):
-        if price >= 1: return f"${price:.2f}"
-        elif price >= 0.1: return f"${price:.3f}"
-        elif price >= 0.01: return f"${price:.4f}"
-        else: return f"${price:.5f}"
-
-    st.markdown(f"**Buy Price:** {fmt(sig['buy_price'])}")
-    st.markdown(f"**Buy Range:** {fmt(sig['buy_range'][0])} – {fmt(sig['buy_range'][1])}")
-
-                st.markdown("**📊 Subscores:** " + ", ".join([f"{k}: {int(v) if v is not None else 'N/A'}" for k, v in sig["subscores"].items()]))
-                st.markdown("**🧠 Analysis:**")
-                st.markdown(sig["analysis"])
