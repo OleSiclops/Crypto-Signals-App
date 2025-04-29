@@ -216,6 +216,7 @@ else:
     
 
 
+
 for i, sig in enumerate([s for s in signals[:20] if s['buy_score'] >= 60]):
     with cols[i % 3]:
         with st.container(border=True):
@@ -224,7 +225,7 @@ for i, sig in enumerate([s for s in signals[:20] if s['buy_score'] >= 60]):
                 banner = "<div style='background-color: green; color: white; text-align: center; padding: 8px; font-size: 18px; font-weight: bold; border-top-left-radius: 10px; border-top-right-radius: 10px;'>🔥 Strong Buy</div>"
             else:
                 banner = "<div style='background-color: orange; color: white; text-align: center; padding: 8px; font-size: 18px; font-weight: bold; border-top-left-radius: 10px; border-top-right-radius: 10px;'>✅ Moderate Buy</div>"
-            st.markdown(banner, unsafe_allow_html=True)
+            st.markdown(banner + "<br>", unsafe_allow_html=True)
 
             colA, colB = st.columns([4, 1])
             with colA:
@@ -233,11 +234,19 @@ for i, sig in enumerate([s for s in signals[:20] if s['buy_score'] >= 60]):
                 st.markdown(f"<div style='font-size:18px; font-weight:600; color:gray'>{sig['symbol']}</div>", unsafe_allow_html=True)
 
             st.metric(label="Buy Score", value=f"{sig['buy_score']:.1f}")
-            st.markdown(f"**Buy Price:** {fmt(sig['buy_price'])}")
-            st.markdown(f"**Buy Range:** {fmt(sig['buy_range'][0])} – {fmt(sig['buy_range'][1])}")
-            st.markdown("**📊 Subscores:** " + ", ".join([f"{k}: {int(v) if v is not None else 'N/A'}" for k, v in sig["subscores"].items()]))
+            st.markdown(f"**Buy Price:** <span style='font-family:inherit'>{fmt(sig['buy_price'])}</span>", unsafe_allow_html=True)
+            st.markdown(f"**Buy Range:** <span style='font-family:inherit'>{fmt(sig['buy_range'][0])} – {fmt(sig['buy_range'][1])}</span>", unsafe_allow_html=True)
+
+            subscores_html = "<ul style='padding-left: 20px;'>"
+            for k, v in sig["subscores"].items():
+                value = int(v) if v is not None else 'N/A'
+                subscores_html += f"<li><strong>{k}:</strong> {value}</li>"
+            subscores_html += "</ul>"
+            st.markdown("**📊 Subscores:**" + subscores_html, unsafe_allow_html=True)
+
             st.markdown("**🧠 Analysis:**")
             st.markdown(sig["analysis"])
+
 
 
 
