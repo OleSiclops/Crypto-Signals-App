@@ -211,7 +211,8 @@ if not signals:
 else:
     st.subheader(f"Top {min(20, len(signals))} BUY Signals")
     cols = st.columns(3)
-    for i, sig in enumerate(signals[:20]):
+    
+for i, sig in enumerate(signals[:20]):
     with cols[i % 3]:
         with st.container(border=True):
             col1, col2 = st.columns([1, 5])
@@ -234,6 +235,7 @@ else:
             st.markdown("**📊 Subscores:** " + ", ".join([f"{k}: {int(v) if v is not None else 'N/A'}" for k, v in sig["subscores"].items()]))
             st.markdown("**🧠 Analysis:**")
             st.markdown(sig["analysis"])
+
 
 
 
