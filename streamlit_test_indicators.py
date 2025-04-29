@@ -259,9 +259,8 @@ for i, sig in enumerate([s for s in signals[:20] if s['buy_score'] >= 60]):
 
             st.markdown("**🧠 Analysis:**")
             st.markdown(sig["analysis"])
-"**🧠 Analysis:**")
+            st.markdown("**🧠 Analysis:**")
             st.markdown(sig["analysis"])
-
 
 
 
