@@ -222,6 +222,41 @@ else:
 for i, sig in enumerate([s for s in signals[:20] if s['buy_score'] >= 60]):
     with cols[i % 3]:
         with st.container(border=True):
+# Gradient Buy Score Bar - Visible and Functional
+            import plotly.graph_objects as go
+            fig = go.Figure()
+
+            fig.add_shape(type="rect", x0=0, x1=60, y0=0, y1=3, fillcolor="red", opacity=0.3, line_width=0)
+            fig.add_shape(type="rect", x0=60, x1=90, y0=0, y1=3, fillcolor="yellow", opacity=0.3, line_width=0)
+            fig.add_shape(type="rect", x0=90, x1=100, y0=0, y1=3, fillcolor="green", opacity=0.3, line_width=0)
+
+            fig.add_trace(go.Scatter(
+                x=[sig['buy_score']],
+                y=[1.5],
+                mode='markers+text',
+                marker=dict(color='black', size=12),
+                text=[f"{sig['buy_score']:.1f}"],
+                textposition='bottom center',
+                hovertemplate="Buy Score: %{x:.1f}<extra></extra>"
+            ))
+
+            fig.add_annotation(x=30, y=3.5, text="❌ Weak", showarrow=False, font=dict(color="red", size=12))
+            fig.add_annotation(x=75, y=3.5, text="⚠️ Moderate", showarrow=False, font=dict(color="orange", size=12))
+            fig.add_annotation(x=95, y=3.5, text="✅ Strong", showarrow=False, font=dict(color="green", size=12))
+
+            fig.update_layout(
+                height=130,
+                margin=dict(l=10, r=10, t=10, b=10),
+                xaxis=dict(range=[0, 100], tickvals=[0, 50, 100], tickangle=0, title=""),
+                yaxis=dict(visible=False),
+                plot_bgcolor="white",
+                paper_bgcolor="rgba(240,240,240,0.4)",
+                showlegend=False
+            )
+
+            st.markdown("<div style='border: 1px solid #ccc; padding: 10px; border-radius: 8px;'>", unsafe_allow_html=True)
+            st.plotly_chart(fig, use_container_width=True)
+            st.markdown("</div>", unsafe_allow_html=True)
             # GRADIENT BAR WITH LABELS AND MARKER
             import plotly.graph_objects as go
             fig = go.Figure()
