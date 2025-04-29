@@ -1,5 +1,4 @@
 
-from streamlit_autorefresh import st_autorefresh
 import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
@@ -35,6 +34,17 @@ def get_ohlc_data_light(coin_id, vs_currency="usd", days="1"):
     except:
         return []
 
+def get_ohlc_data_full(coin_id, vs_currency="usd", days="1"):
+    url = f"{COINGECKO_API_BASE}/coins/{coin_id}/market_chart"
+    params = {"vs_currency": vs_currency, "days": days}
+    try:
+        response = requests.get(url, params=params, headers=HEADERS)
+        response.raise_for_status()
+        prices = response.json().get("prices", [])
+        return [[entry[0], entry[1], entry[1], entry[1], entry[1]] for entry in prices]
+    except:
+        return []
+
 def get_btc_market_sentiment():
     url = f"{COINGECKO_API_BASE}/coins/bitcoin"
     params = {
@@ -61,9 +71,11 @@ def generate_paragraph(coin_name, rsi, gain):
 
 st.set_page_config(page_title="Crypto Dashboard v4.5", layout="wide")
 st.title("🚀 Crypto Signal Dashboard (Strong Buy Cards)")
+from streamlit_autorefresh import st_autorefresh
 st_autorefresh(interval=120000, key="market_sentiment_refresh")
 
 with st.sidebar:
+    scan_mode = st.radio("Scanning Mode:", ("🛩️ Light Scan (1h)", "🧠 Full Scan (4h)"))
     gainer_period = st.radio("Top Gainers Period:", ("1h", "24h", "7d"))
 
 btc_change = get_btc_market_sentiment()
@@ -91,7 +103,7 @@ for coin in coins:
     coin_logo = coin["image"]
     price_change = coin.get(f"price_change_percentage_{gainer_period}_in_currency", 0)
 
-    ohlc_data = get_ohlc_data_light(coin_id)
+    ohlc_data = get_ohlc_data_light(coin_id) if "Light" in scan_mode else get_ohlc_data_full(coin_id)
     if not ohlc_data:
         continue
 
@@ -121,8 +133,11 @@ else:
     cols = st.columns(3)
     for idx, (coin_name, coin_symbol, coin_logo, rsi_score, gain, paragraph) in enumerate(buy_signals[:20]):
         with cols[idx % 3]:
-            with st.container():
-                st.image(coin_logo, width=32)
-                st.markdown(f"### 🪙 {coin_name} ({coin_symbol})")
+            with st.container(border=True):
+                col1, col2 = st.columns([1, 5])
+                with col1:
+                    st.image(coin_logo, width=40)
+                with col2:
+                    st.markdown(f"**{coin_name} ({coin_symbol})**")
                 st.metric(label="RSI Score", value=f"{rsi_score:.1f}")
-                st.write(paragraph)
+                st.markdown(paragraph)
