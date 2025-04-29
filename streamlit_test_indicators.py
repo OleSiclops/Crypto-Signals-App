@@ -214,29 +214,32 @@ else:
     st.subheader(f"Top {min(20, len(signals))} BUY Signals")
     cols = st.columns(3)
     
+
 for i, sig in enumerate(signals[:20]):
     with cols[i % 3]:
         with st.container(border=True):
-            col1, col2 = st.columns([1, 5])
-            with col1:
+            colA, colB = st.columns([4, 1])
+            with colA:
                 st.image(sig["image"], width=40)
-            with col2:
-                st.markdown(f"**{sig['name']} ({sig['symbol']})**")
+                st.markdown(f"<div style='font-size:24px; font-weight:700'>{sig['name']}</div>", unsafe_allow_html=True)
+                st.markdown(f"<div style='font-size:18px; font-weight:600; color:gray'>{sig['symbol']}</div>", unsafe_allow_html=True)
+            with colB:
+                badge = ""
+                if sig['buy_score'] >= 75:
+                    badge = "<div style='text-align:right; font-size:16px; font-weight:bold; color:green;'>🔥 Strong Buy</div>"
+                elif sig['buy_score'] >= 60:
+                    badge = "<div style='text-align:right; font-size:16px; font-weight:bold; color:orange;'>✅ Moderate Buy</div>"
+                else:
+                    badge = "<div style='text-align:right; font-size:14px; font-weight:bold; color:gray;'>⚠️ Weak Signal</div>"
+                st.markdown(badge, unsafe_allow_html=True)
 
-            score = sig['buy_score']
-            if score >= 75:
-                st.markdown("🔥 **Strong Buy – Buy Now**")
-            elif score >= 60:
-                st.markdown("✅ **Moderate Buy**")
-            else:
-                st.markdown("⚠️ **Weak Signal – Hold**")
-            
-            st.metric(label="Buy Score", value=f"{score:.1f}")
+            st.metric(label="Buy Score", value=f"{sig['buy_score']:.1f}")
             st.markdown(f"**Buy Price:** {fmt(sig['buy_price'])}")
             st.markdown(f"**Buy Range:** {fmt(sig['buy_range'][0])} – {fmt(sig['buy_range'][1])}")
             st.markdown("**📊 Subscores:** " + ", ".join([f"{k}: {int(v) if v is not None else 'N/A'}" for k, v in sig["subscores"].items()]))
             st.markdown("**🧠 Analysis:**")
             st.markdown(sig["analysis"])
+
 
 
 
