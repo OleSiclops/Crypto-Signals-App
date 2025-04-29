@@ -211,9 +211,10 @@ signals = sorted(signals, key=lambda x: x["buy_score"], reverse=True)
 if not signals:
     st.warning("⚠️ No qualifying signals at the moment.")
 else:
-    st.subheader(f"Top {min(20, len(signals))} BUY Signals")
+    st.subheader("BUY Signals")
     cols = st.columns(3)
     
+
 
 
 
@@ -235,12 +236,11 @@ for i, sig in enumerate([s for s in signals[:20] if s['buy_score'] >= 60]):
                 st.markdown(f"<div style='font-size:18px; font-weight:600; color:gray'>{sig['symbol']}</div>", unsafe_allow_html=True)
 
             st.metric(label="Buy Score", value=f"{sig['buy_score']:.1f}")
-            st.markdown(f"**Current Price:** <span style='font-family:inherit'>{fmt(sig['price'])}</span>", unsafe_allow_html=True)
-            st.markdown(f"**Buy Price:** <span style='font-family:inherit'>{fmt(sig['buy_price'])}</span>", unsafe_allow_html=True)
+            st.markdown(f"**Current Price:** <span style='font-family:sans-serif'>{fmt(sig['price'])}</span>", unsafe_allow_html=True)
 
             buy_low = fmt(sig['buy_range'][0])
             buy_high = fmt(sig['buy_range'][1])
-            st.markdown(f"**Buy Range:** <span style='font-family:inherit'>{buy_low} – {buy_high}</span>", unsafe_allow_html=True)
+            st.markdown(f"**Buy Range:** <span style='font-family:sans-serif'>{buy_low} – {buy_high}</span>", unsafe_allow_html=True)
 
             subscores_html = "<ul style='padding-left: 20px;'>"
             for k, v in sig["subscores"].items():
@@ -251,6 +251,7 @@ for i, sig in enumerate([s for s in signals[:20] if s['buy_score'] >= 60]):
 
             st.markdown("**🧠 Analysis:**")
             st.markdown(sig["analysis"])
+
 
 
 
