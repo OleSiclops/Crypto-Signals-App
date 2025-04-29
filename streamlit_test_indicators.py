@@ -25,6 +25,27 @@ def get_top_gainers(period="1h"):
     response.raise_for_status()
     return response.json()
 
+def get_ohlc_data_light(coin_id, vs_currency="usd", days="1"):
+    url = f"{COINGECKO_API_BASE}/coins/{coin_id}/ohlc"
+    params = {"vs_currency": vs_currency, "days": days}
+    try:
+        response = requests.get(url, params=params, headers=HEADERS)
+        response.raise_for_status()
+        return response.json()
+    except:
+        return []
+
+def get_ohlc_data_full(coin_id, vs_currency="usd", days="1"):
+    url = f"{COINGECKO_API_BASE}/coins/{coin_id}/market_chart"
+    params = {"vs_currency": vs_currency, "days": days}
+    try:
+        response = requests.get(url, params=params, headers=HEADERS)
+        response.raise_for_status()
+        prices = response.json().get("prices", [])
+        return [[entry[0], entry[1], entry[1], entry[1], entry[1]] for entry in prices]
+    except:
+        return []
+
 def get_btc_market_sentiment():
     url = f"{COINGECKO_API_BASE}/coins/bitcoin"
     params = {
@@ -53,7 +74,7 @@ def generate_paragraph(name, rsi, gain):
     return random.choice(templates)
 
 st.set_page_config(page_title="Crypto Dashboard v4.5.2", layout="wide")
-st.title("🚀 Crypto Signal Dashboard v4.5.2 – Full Corrected Version")
+st.title("🚀 Crypto Signal Dashboard v4.5.2 – Final with Scan Toggle")
 st_autorefresh(interval=120000, key="market_sentiment_refresh")
 
 with st.sidebar:
@@ -89,17 +110,32 @@ for coin in coins:
     if price_change is None:
         continue
 
-    score = 100 - abs(70 - random.uniform(60, 80)) * 2.5
+    if "Light" in scan_mode:
+        ohlc_data = get_ohlc_data_light(coin["id"])
+    else:
+        ohlc_data = get_ohlc_data_full(coin["id"])
+
+    if not ohlc_data or len(ohlc_data) < 3:
+        continue
+
+    df = pd.DataFrame(ohlc_data, columns=["timestamp", "open", "high", "low", "close"])
+    df["timestamp"] = pd.to_datetime(df["timestamp"], unit="ms")
+    df.set_index("timestamp", inplace=True)
+
+    rsi = ta.momentum.RSIIndicator(close=df["close"], window=14).rsi().dropna()
+    if rsi.empty:
+        continue
+
+    rsi_val = rsi.iloc[-1]
+    score = max(0, min(100, (70 - rsi_val) * (100 / 40)))
     recommended_entry = f"${price:.2f}"
     price_lower = price * 0.985
     price_upper = price * 1.015
     price_range = f"${price_lower:.2f} – ${price_upper:.2f}"
 
-    rsi_simulated = random.uniform(65, 80)
+    paragraph = generate_paragraph(coin_name, rsi_val, price_change)
 
-    paragraph = generate_paragraph(coin_name, rsi_simulated, price_change)
-
-    buy_signals.append((coin_name, coin_symbol, coin_logo, score, rsi_simulated, price_change, paragraph, recommended_entry, price_range))
+    buy_signals.append((coin_name, coin_symbol, coin_logo, score, rsi_val, price_change, paragraph, recommended_entry, price_range))
 
 buy_signals = sorted(buy_signals, key=lambda x: x[3], reverse=True)
 
