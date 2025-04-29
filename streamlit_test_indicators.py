@@ -201,7 +201,9 @@ for coin in coins:
         "gain": coin.get(f"price_change_percentage_{period}_in_currency", 0.0),
         "buy_score": buy_score,
         "subscores": subscores,
-        "analysis": paragraph
+        "analysis": paragraph,
+        "buy_price": coin["current_price"],
+        "buy_range": (coin["current_price"] * 0.985, coin["current_price"] * 1.015)
     })
 
 signals = sorted(signals, key=lambda x: x["buy_score"], reverse=True)
