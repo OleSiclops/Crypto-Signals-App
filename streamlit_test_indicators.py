@@ -237,19 +237,29 @@ for i, sig in enumerate([s for s in signals[:20] if s['buy_score'] >= 60]):
 
             
             
+            
             st.metric(label="Buy Score", value=f"{sig['buy_score']:.1f}")
             st.markdown(f"**Current Price:** <span style='font-family:sans-serif'>{fmt(sig['price'])}</span>", unsafe_allow_html=True)
 
             buy_low = fmt(sig['buy_range'][0])
             buy_high = fmt(sig['buy_range'][1])
             buy_range_html = f"""
-<div style='font-family: sans-serif; font-size: 16px;'>
+<div style='font-family: sans-serif; font-size: 15px;'>
 <strong>Buy Range:</strong> {buy_low} – {buy_high}
 </div>
 """
             st.markdown(buy_range_html, unsafe_allow_html=True)
 
+            subscores_html = "<ul style='padding-left: 20px;'>"
+            for k, v in sig["subscores"].items():
+                value = int(v) if v is not None else 'N/A'
+                subscores_html += f"<li><strong>{k}:</strong> {value}</li>"
+            subscores_html += "</ul>"
+            st.markdown("**📊 Subscores:**" + subscores_html, unsafe_allow_html=True)
+
             st.markdown("**🧠 Analysis:**")
+            st.markdown(sig["analysis"])
+**🧠 Analysis:**")
             st.markdown(sig["analysis"])
 
 
