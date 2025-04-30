@@ -92,7 +92,7 @@ def plot_btc_chart(df):
     fig.add_trace(go.Scatter(x=df.index, y=df["SMA_12h"], mode="lines", name="12h SMA", line=dict(dash="dot")))
     fig.update_layout(title="BTC 24h Price Chart with 12h SMA", height=350)
     
-st.plotly_chart(fig, use_container_width=True)
+st.plotly_chart(fig, use_container_width=True, key=f"plotly_chart_{i}")
 
 # ======== MARKET INDICATOR AT A GLANCE (v4.6.0) ========
 with st.expander("📊 Market Indicator at a Glance", expanded=True):
@@ -132,7 +132,7 @@ with st.expander("📊 Market Indicator at a Glance", expanded=True):
     except:
         st.markdown("**Top Gainer:** N/A")
 
-    st.markdown("</div>", unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
 # ======== END MARKET INDICATOR AT A GLANCE ========
 
 
@@ -207,7 +207,7 @@ with col2:
         title={'text': "BTC 1h Sentiment"}
     ))
     
-st.plotly_chart(fig, use_container_width=True)
+st.plotly_chart(fig, use_container_width=True, key=f"plotly_chart_{i}")
 
 # ======== MARKET INDICATOR AT A GLANCE (v4.6.0) ========
 with st.expander("📊 Market Indicator at a Glance", expanded=True):
@@ -247,7 +247,7 @@ with st.expander("📊 Market Indicator at a Glance", expanded=True):
     except:
         st.markdown("**Top Gainer:** N/A")
 
-    st.markdown("</div>", unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
 # ======== END MARKET INDICATOR AT A GLANCE ========
 
 
@@ -342,7 +342,7 @@ for i, sig in enumerate([s for s in signals[:20] if s['buy_score'] >= 50]):
 
             st.markdown("<div style='border: 1px solid #ccc; padding: 10px; border-radius: 8px;'>", unsafe_allow_html=True)
             
-st.plotly_chart(fig, use_container_width=True)
+st.plotly_chart(fig, use_container_width=True, key=f"plotly_chart_{i}")
 
 # ======== MARKET INDICATOR AT A GLANCE (v4.6.0) ========
 with st.expander("📊 Market Indicator at a Glance", expanded=True):
@@ -382,10 +382,10 @@ with st.expander("📊 Market Indicator at a Glance", expanded=True):
     except:
         st.markdown("**Top Gainer:** N/A")
 
-    st.markdown("</div>", unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
 # ======== END MARKET INDICATOR AT A GLANCE ========
 
-            st.markdown("</div>", unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
             # GRADIENT BAR WITH LABELS AND MARKER
             import plotly.graph_objects as go
             fig = go.Figure()
@@ -415,7 +415,7 @@ with st.expander("📊 Market Indicator at a Glance", expanded=True):
                               plot_bgcolor="white")
 
             
-st.plotly_chart(fig, use_container_width=True)
+st.plotly_chart(fig, use_container_width=True, key=f"plotly_chart_{i}")
 
 # ======== MARKET INDICATOR AT A GLANCE (v4.6.0) ========
 with st.expander("📊 Market Indicator at a Glance", expanded=True):
@@ -455,7 +455,7 @@ with st.expander("📊 Market Indicator at a Glance", expanded=True):
     except:
         st.markdown("**Top Gainer:** N/A")
 
-    st.markdown("</div>", unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
 # ======== END MARKET INDICATOR AT A GLANCE ========
 
 
@@ -490,7 +490,6 @@ with st.expander("📊 Market Indicator at a Glance", expanded=True):
 
             st.markdown("**🧠 Analysis:**")
             st.markdown(sig["analysis"])
-
 
 
 
