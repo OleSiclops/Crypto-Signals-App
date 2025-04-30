@@ -87,12 +87,11 @@ def plot_btc_chart(df):
         return
     df.set_index("timestamp", inplace=True)
     df["SMA_12h"] = df["price"].rolling(window=12).mean()
-    fig = go.Figure()
-    fig.add_trace(go.Scatter(x=df.index, y=df["price"], mode="lines", name="BTC Price"))
-    fig.add_trace(go.Scatter(x=df.index, y=df["SMA_12h"], mode="lines", name="12h SMA", line=dict(dash="dot")))
-    fig.update_layout(title="BTC 24h Price Chart with 12h SMA", height=350)
-    
-st.plotly_chart(fig, use_container_width=True, key=f"plotly_chart_{i}")
+            fig = go.Figure()
+            fig.add_trace(go.Scatter(x=df.index, y=df["price"], mode="lines", name="BTC Price"))
+            fig.add_trace(go.Scatter(x=df.index, y=df["SMA_12h"], mode="lines", name="12h SMA", line=dict(dash="dot")))
+            fig.update_layout(title="BTC 24h Price Chart with 12h SMA", height=350)
+                        st.plotly_chart(fig, use_container_width=True, key='card_chart_0')
 
 # ======== MARKET INDICATOR AT A GLANCE (v4.6.0) ========
 with st.expander("📊 Market Indicator at a Glance", expanded=True):
@@ -207,7 +206,7 @@ with col2:
         title={'text': "BTC 1h Sentiment"}
     ))
     
-st.plotly_chart(fig, use_container_width=True, key=f"plotly_chart_{i}")
+            st.plotly_chart(fig, use_container_width=True, key='card_chart_1')
 
 # ======== MARKET INDICATOR AT A GLANCE (v4.6.0) ========
 with st.expander("📊 Market Indicator at a Glance", expanded=True):
@@ -310,38 +309,32 @@ for i, sig in enumerate([s for s in signals[:20] if s['buy_score'] >= 50]):
         with st.container(border=True):
 # Gradient Buy Score Bar - Visible and Functional
             fig = go.Figure()
-
-            fig.add_shape(type="rect", x0=0, x1=60, y0=0, y1=3, fillcolor="red", opacity=0.3, line_width=0)
+                        fig.add_shape(type="rect", x0=0, x1=60, y0=0, y1=3, fillcolor="red", opacity=0.3, line_width=0)
             fig.add_shape(type="rect", x0=60, x1=90, y0=0, y1=3, fillcolor="yellow", opacity=0.3, line_width=0)
             fig.add_shape(type="rect", x0=90, x1=100, y0=0, y1=3, fillcolor="green", opacity=0.3, line_width=0)
-
-            fig.add_trace(go.Scatter(
-                x=[sig['buy_score']],
-                y=[1.5],
-                mode='markers+text',
-                marker=dict(color='black', size=12),
-                text=[f"{sig['buy_score']:.1f}"],
-                textposition='bottom center',
-                hovertemplate="Buy Score: %{x:.1f}<extra></extra>"
+                        fig.add_trace(go.Scatter(
+            x=[sig['buy_score']],
+            y=[1.5],
+            mode='markers+text',
+            marker=dict(color='black', size=12),
+            text=[f"{sig['buy_score']:.1f}"],
+            textposition='bottom center',
+            hovertemplate="Buy Score: %{x:.1f}<extra></extra>"
             ))
-
-            fig.add_annotation(x=30, y=3.5, text="❌ Weak", showarrow=False, font=dict(color="red", size=12))
+                        fig.add_annotation(x=30, y=3.5, text="❌ Weak", showarrow=False, font=dict(color="red", size=12))
             fig.add_annotation(x=75, y=3.5, text="⚠️ Moderate", showarrow=False, font=dict(color="orange", size=12))
             fig.add_annotation(x=95, y=3.5, text="✅ Strong", showarrow=False, font=dict(color="green", size=12))
-
-            fig.update_layout(
-                height=130,
-                margin=dict(l=10, r=10, t=10, b=10),
-                xaxis=dict(range=[0, 100], tickvals=[0, 50, 100], tickangle=0, title=""),
-                yaxis=dict(visible=False),
-                plot_bgcolor="white",
-                paper_bgcolor="rgba(240,240,240,0.4)",
-                showlegend=False
+                        fig.update_layout(
+            height=130,
+            margin=dict(l=10, r=10, t=10, b=10),
+            xaxis=dict(range=[0, 100], tickvals=[0, 50, 100], tickangle=0, title=""),
+            yaxis=dict(visible=False),
+            plot_bgcolor="white",
+            paper_bgcolor="rgba(240,240,240,0.4)",
+            showlegend=False
             )
-
-            st.markdown("<div style='border: 1px solid #ccc; padding: 10px; border-radius: 8px;'>", unsafe_allow_html=True)
-            
-st.plotly_chart(fig, use_container_width=True, key=f"plotly_chart_{i}")
+                        st.markdown("<div style='border: 1px solid #ccc; padding: 10px; border-radius: 8px;'>", unsafe_allow_html=True)
+                        st.plotly_chart(fig, use_container_width=True, key='card_chart_2')
 
 # ======== MARKET INDICATOR AT A GLANCE (v4.6.0) ========
 with st.expander("📊 Market Indicator at a Glance", expanded=True):
@@ -387,33 +380,27 @@ with st.expander("📊 Market Indicator at a Glance", expanded=True):
         st.markdown("</div>", unsafe_allow_html=True)
             # GRADIENT BAR WITH LABELS AND MARKER
             fig = go.Figure()
-
-            # Add colored background rectangles
+                        # Add colored background rectangles
             fig.add_shape(type="rect", x0=0, x1=60, y0=0, y1=1, fillcolor="red", opacity=0.3, line=dict(width=0))
             fig.add_shape(type="rect", x0=60, x1=90, y0=0, y1=1, fillcolor="yellow", opacity=0.3, line=dict(width=0))
             fig.add_shape(type="rect", x0=90, x1=100, y0=0, y1=1, fillcolor="green", opacity=0.3, line=dict(width=0))
-
-            # Add score marker
+                        # Add score marker
             fig.add_shape(type="line",
-                          x0=sig['buy_score'],
-                          x1=sig['buy_score'],
-                          y0=0, y1=1,
-                          line=dict(color="black", width=4))
-
-            # Add text labels at appropriate positions
+            x0=sig['buy_score'],
+            x1=sig['buy_score'],
+            y0=0, y1=1,
+            line=dict(color="black", width=4))
+                        # Add text labels at appropriate positions
             fig.add_annotation(x=30, y=1.2, text="Weak", showarrow=False, font=dict(color="red", size=12))
             fig.add_annotation(x=75, y=1.2, text="Moderate", showarrow=False, font=dict(color="orange", size=12))
             fig.add_annotation(x=95, y=1.2, text="Strong", showarrow=False, font=dict(color="green", size=12))
-
-            # Set layout properties
+                        # Set layout properties
             fig.update_layout(height=80,
-                              margin=dict(l=10, r=10, t=10, b=10),
-                              xaxis=dict(range=[0, 100], showticklabels=True, tickvals=[0, 50, 100], title="Buy Score"),
-                              yaxis=dict(visible=False),
-                              plot_bgcolor="white")
-
-            
-st.plotly_chart(fig, use_container_width=True, key=f"plotly_chart_{i}")
+            margin=dict(l=10, r=10, t=10, b=10),
+            xaxis=dict(range=[0, 100], showticklabels=True, tickvals=[0, 50, 100], title="Buy Score"),
+            yaxis=dict(visible=False),
+            plot_bgcolor="white")
+                                    st.plotly_chart(fig, use_container_width=True, key='card_chart_3')
 
 # ======== MARKET INDICATOR AT A GLANCE (v4.6.0) ========
 with st.expander("📊 Market Indicator at a Glance", expanded=True):
