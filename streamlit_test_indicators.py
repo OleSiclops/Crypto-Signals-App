@@ -462,8 +462,8 @@ with st.expander("📊 Market Indicator at a Glance", expanded=True):
             colA, colB = st.columns([4, 1])
             with colA:
                 st.image(sig["image"], width=40)
-                st.markdown(f"<div style='font-size:24px; font-weight:700'>{sig['name']}</div>", unsafe_allow_html=True)
-                st.markdown(f"<div style='font-size:18px; font-weight:600; color:gray'>{sig['symbol']}</div>", unsafe_allow_html=True)
+        st.markdown(f"<div style='font-size:24px; font-weight:700'>{sig['name']}</div>", unsafe_allow_html=True)
+        st.markdown(f"<div style='font-size:18px; font-weight:600; color:gray'>{sig['symbol']}</div>", unsafe_allow_html=True)
 
             
             
