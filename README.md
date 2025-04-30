@@ -1,2 +1,3 @@
-# Crypto Signal Scanner v4.5.2 – Final Full Deployable Version
-Includes all features, randomized paragraphs, Light/Full toggle, indicator breakdown, and polished UI.
+# Crypto Signal Scanner v4.6.0
+
+This build includes the fully styled signal cards and all necessary support files to render them.
