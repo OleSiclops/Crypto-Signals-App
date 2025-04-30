@@ -12,7 +12,7 @@ def display_signal_card(signal):
     reason = signal['analysis']
     logo_url = signal.get('logo_url', '')
 
-    st.markdown(f"""
+    st.markdown(f""", unsafe_allow_html=True)
     <div style='border: 1px solid #ddd; border-radius: 12px; padding: 1rem; background: white; margin-bottom: 2rem; box-shadow: 0 0 6px rgba(0,0,0,0.05);'>
 
         <div style="padding: 6px 0 12px;">
