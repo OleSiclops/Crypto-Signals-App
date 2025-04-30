@@ -91,7 +91,50 @@ def plot_btc_chart(df):
     fig.add_trace(go.Scatter(x=df.index, y=df["price"], mode="lines", name="BTC Price"))
     fig.add_trace(go.Scatter(x=df.index, y=df["SMA_12h"], mode="lines", name="12h SMA", line=dict(dash="dot")))
     fig.update_layout(title="BTC 24h Price Chart with 12h SMA", height=350)
-    st.plotly_chart(fig, use_container_width=True)
+    
+st.plotly_chart(fig, use_container_width=True)
+
+# ======== MARKET INDICATOR AT A GLANCE (v4.6.0) ========
+with st.expander("📊 Market Indicator at a Glance", expanded=True):
+    st.markdown("""
+    <div style='background-color: #e0e0e0; padding: 10px; border-radius: 8px;'>
+    """, unsafe_allow_html=True)
+
+    btc_subscores = IndicatorEngineV2(btc_df).calculate_all() if not btc_df.empty else {}
+
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.metric("BTC 1h Change", f"{btc_change:+.2f}%")
+        rsi_val = btc_subscores.get("RSI", "N/A")
+        st.metric("RSI", f"{rsi_val if isinstance(rsi_val, (int, float)) else 'N/A'}")
+
+    with col2:
+        macd_val = btc_subscores.get("MACD", "N/A")
+        st.metric("MACD", "Bullish" if macd_val == 100 else "Bearish" if macd_val == 30 else "N/A")
+        ema_val = btc_subscores.get("EMA", "N/A")
+        st.metric("EMA Trend", "Above 50 EMA" if ema_val == 100 else "Below 50 EMA" if ema_val == 30 else "N/A")
+
+    with col3:
+        volume_val = btc_subscores.get("Volume", "N/A")
+        st.metric("Volume", "High" if volume_val == 100 else "Moderate" if volume_val == 60 else "Low" if volume_val == 30 else "N/A")
+
+        try:
+            fng_response = requests.get("https://api.alternative.me/fng/?limit=1", timeout=5).json()
+            fng_value = fng_response["data"][0]["value"]
+            fng_classification = fng_response["data"][0]["value_classification"]
+            st.metric("Fear & Greed", f"{fng_value} ({fng_classification})")
+        except:
+            st.metric("Fear & Greed", "N/A")
+
+    try:
+        top_coin = next(c for c in coins if not is_stablecoin(c))
+        st.markdown(f"**Top Gainer ({period}):** {top_coin['name']} +{top_coin['price_change_percentage_1h_in_currency']['usd']:.2f}%")
+    except:
+        st.markdown("**Top Gainer:** N/A")
+
+    st.markdown("</div>", unsafe_allow_html=True)
+# ======== END MARKET INDICATOR AT A GLANCE ========
+
 
 def generate_human_analysis(coin, scores):
     phrases = []
@@ -163,7 +206,50 @@ with col2:
                          {'range': [66, 100], 'color': "green"}]},
         title={'text': "BTC 1h Sentiment"}
     ))
-    st.plotly_chart(fig, use_container_width=True)
+    
+st.plotly_chart(fig, use_container_width=True)
+
+# ======== MARKET INDICATOR AT A GLANCE (v4.6.0) ========
+with st.expander("📊 Market Indicator at a Glance", expanded=True):
+    st.markdown("""
+    <div style='background-color: #e0e0e0; padding: 10px; border-radius: 8px;'>
+    """, unsafe_allow_html=True)
+
+    btc_subscores = IndicatorEngineV2(btc_df).calculate_all() if not btc_df.empty else {}
+
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.metric("BTC 1h Change", f"{btc_change:+.2f}%")
+        rsi_val = btc_subscores.get("RSI", "N/A")
+        st.metric("RSI", f"{rsi_val if isinstance(rsi_val, (int, float)) else 'N/A'}")
+
+    with col2:
+        macd_val = btc_subscores.get("MACD", "N/A")
+        st.metric("MACD", "Bullish" if macd_val == 100 else "Bearish" if macd_val == 30 else "N/A")
+        ema_val = btc_subscores.get("EMA", "N/A")
+        st.metric("EMA Trend", "Above 50 EMA" if ema_val == 100 else "Below 50 EMA" if ema_val == 30 else "N/A")
+
+    with col3:
+        volume_val = btc_subscores.get("Volume", "N/A")
+        st.metric("Volume", "High" if volume_val == 100 else "Moderate" if volume_val == 60 else "Low" if volume_val == 30 else "N/A")
+
+        try:
+            fng_response = requests.get("https://api.alternative.me/fng/?limit=1", timeout=5).json()
+            fng_value = fng_response["data"][0]["value"]
+            fng_classification = fng_response["data"][0]["value_classification"]
+            st.metric("Fear & Greed", f"{fng_value} ({fng_classification})")
+        except:
+            st.metric("Fear & Greed", "N/A")
+
+    try:
+        top_coin = next(c for c in coins if not is_stablecoin(c))
+        st.markdown(f"**Top Gainer ({period}):** {top_coin['name']} +{top_coin['price_change_percentage_1h_in_currency']['usd']:.2f}%")
+    except:
+        st.markdown("**Top Gainer:** N/A")
+
+    st.markdown("</div>", unsafe_allow_html=True)
+# ======== END MARKET INDICATOR AT A GLANCE ========
+
 
 with st.sidebar:
     scan_mode = st.radio("Scan Mode:", ["🛩️ Light (1h)", "🧠 Full (4h)"])
@@ -255,7 +341,50 @@ for i, sig in enumerate([s for s in signals[:20] if s['buy_score'] >= 50]):
             )
 
             st.markdown("<div style='border: 1px solid #ccc; padding: 10px; border-radius: 8px;'>", unsafe_allow_html=True)
-            st.plotly_chart(fig, use_container_width=True)
+            
+st.plotly_chart(fig, use_container_width=True)
+
+# ======== MARKET INDICATOR AT A GLANCE (v4.6.0) ========
+with st.expander("📊 Market Indicator at a Glance", expanded=True):
+    st.markdown("""
+    <div style='background-color: #e0e0e0; padding: 10px; border-radius: 8px;'>
+    """, unsafe_allow_html=True)
+
+    btc_subscores = IndicatorEngineV2(btc_df).calculate_all() if not btc_df.empty else {}
+
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.metric("BTC 1h Change", f"{btc_change:+.2f}%")
+        rsi_val = btc_subscores.get("RSI", "N/A")
+        st.metric("RSI", f"{rsi_val if isinstance(rsi_val, (int, float)) else 'N/A'}")
+
+    with col2:
+        macd_val = btc_subscores.get("MACD", "N/A")
+        st.metric("MACD", "Bullish" if macd_val == 100 else "Bearish" if macd_val == 30 else "N/A")
+        ema_val = btc_subscores.get("EMA", "N/A")
+        st.metric("EMA Trend", "Above 50 EMA" if ema_val == 100 else "Below 50 EMA" if ema_val == 30 else "N/A")
+
+    with col3:
+        volume_val = btc_subscores.get("Volume", "N/A")
+        st.metric("Volume", "High" if volume_val == 100 else "Moderate" if volume_val == 60 else "Low" if volume_val == 30 else "N/A")
+
+        try:
+            fng_response = requests.get("https://api.alternative.me/fng/?limit=1", timeout=5).json()
+            fng_value = fng_response["data"][0]["value"]
+            fng_classification = fng_response["data"][0]["value_classification"]
+            st.metric("Fear & Greed", f"{fng_value} ({fng_classification})")
+        except:
+            st.metric("Fear & Greed", "N/A")
+
+    try:
+        top_coin = next(c for c in coins if not is_stablecoin(c))
+        st.markdown(f"**Top Gainer ({period}):** {top_coin['name']} +{top_coin['price_change_percentage_1h_in_currency']['usd']:.2f}%")
+    except:
+        st.markdown("**Top Gainer:** N/A")
+
+    st.markdown("</div>", unsafe_allow_html=True)
+# ======== END MARKET INDICATOR AT A GLANCE ========
+
             st.markdown("</div>", unsafe_allow_html=True)
             # GRADIENT BAR WITH LABELS AND MARKER
             import plotly.graph_objects as go
@@ -285,7 +414,50 @@ for i, sig in enumerate([s for s in signals[:20] if s['buy_score'] >= 50]):
                               yaxis=dict(visible=False),
                               plot_bgcolor="white")
 
-            st.plotly_chart(fig, use_container_width=True)
+            
+st.plotly_chart(fig, use_container_width=True)
+
+# ======== MARKET INDICATOR AT A GLANCE (v4.6.0) ========
+with st.expander("📊 Market Indicator at a Glance", expanded=True):
+    st.markdown("""
+    <div style='background-color: #e0e0e0; padding: 10px; border-radius: 8px;'>
+    """, unsafe_allow_html=True)
+
+    btc_subscores = IndicatorEngineV2(btc_df).calculate_all() if not btc_df.empty else {}
+
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.metric("BTC 1h Change", f"{btc_change:+.2f}%")
+        rsi_val = btc_subscores.get("RSI", "N/A")
+        st.metric("RSI", f"{rsi_val if isinstance(rsi_val, (int, float)) else 'N/A'}")
+
+    with col2:
+        macd_val = btc_subscores.get("MACD", "N/A")
+        st.metric("MACD", "Bullish" if macd_val == 100 else "Bearish" if macd_val == 30 else "N/A")
+        ema_val = btc_subscores.get("EMA", "N/A")
+        st.metric("EMA Trend", "Above 50 EMA" if ema_val == 100 else "Below 50 EMA" if ema_val == 30 else "N/A")
+
+    with col3:
+        volume_val = btc_subscores.get("Volume", "N/A")
+        st.metric("Volume", "High" if volume_val == 100 else "Moderate" if volume_val == 60 else "Low" if volume_val == 30 else "N/A")
+
+        try:
+            fng_response = requests.get("https://api.alternative.me/fng/?limit=1", timeout=5).json()
+            fng_value = fng_response["data"][0]["value"]
+            fng_classification = fng_response["data"][0]["value_classification"]
+            st.metric("Fear & Greed", f"{fng_value} ({fng_classification})")
+        except:
+            st.metric("Fear & Greed", "N/A")
+
+    try:
+        top_coin = next(c for c in coins if not is_stablecoin(c))
+        st.markdown(f"**Top Gainer ({period}):** {top_coin['name']} +{top_coin['price_change_percentage_1h_in_currency']['usd']:.2f}%")
+    except:
+        st.markdown("**Top Gainer:** N/A")
+
+    st.markdown("</div>", unsafe_allow_html=True)
+# ======== END MARKET INDICATOR AT A GLANCE ========
+
 
             colA, colB = st.columns([4, 1])
             with colA:
