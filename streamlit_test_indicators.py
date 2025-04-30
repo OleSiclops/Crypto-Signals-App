@@ -141,8 +141,8 @@ def fmt(price):
         return f"${price:.5f}"
 
 
-st.set_page_config(page_title="Crypto Signal Dashboard v4.5.6", layout="wide")
-st.title("🚀 Crypto Signal Dashboard v4.5.6 – Humanized Analysis")
+st.set_page_config(page_title="Crypto Signal Dashboard v4.6.0", layout="wide")
+st.title("🚀 Crypto Signal Dashboard v4.6.0 – Humanized Analysis")
 st_autorefresh(interval=120000, key="market_sentiment_refresh")
 
 col1, col2 = st.columns([2, 1])
@@ -219,7 +219,7 @@ else:
 
 
 
-for i, sig in enumerate([s for s in signals[:20] if s['buy_score'] >= 60]):
+for i, sig in enumerate([s for s in signals[:20] if s['buy_score'] >= 50]):
     with cols[i % 3]:
         with st.container(border=True):
 # Gradient Buy Score Bar - Visible and Functional
