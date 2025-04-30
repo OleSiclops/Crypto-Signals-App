@@ -309,7 +309,6 @@ for i, sig in enumerate([s for s in signals[:20] if s['buy_score'] >= 50]):
     with cols[i % 3]:
         with st.container(border=True):
 # Gradient Buy Score Bar - Visible and Functional
-            import plotly.graph_objects as go
             fig = go.Figure()
 
             fig.add_shape(type="rect", x0=0, x1=60, y0=0, y1=3, fillcolor="red", opacity=0.3, line_width=0)
@@ -387,7 +386,6 @@ with st.expander("📊 Market Indicator at a Glance", expanded=True):
 
         st.markdown("</div>", unsafe_allow_html=True)
             # GRADIENT BAR WITH LABELS AND MARKER
-            import plotly.graph_objects as go
             fig = go.Figure()
 
             # Add colored background rectangles
