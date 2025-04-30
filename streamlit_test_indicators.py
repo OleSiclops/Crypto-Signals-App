@@ -38,6 +38,13 @@ btc_df = fetch_btc_24h_prices()
 st.write("📊 BTC Data Head:", btc_df.head())
 
 plot_btc_chart(btc_df)
+
+with st.sidebar:
+    st.write("🧭 **Scan Configuration**")
+    scan_mode = st.radio("Scan Mode", options=["Light", "Full"], index=0)
+    period = st.selectbox("Top Gainers Period", options=["1h", "4h", "24h", "7d"], index=0)
+    st.write("📌 Selected Mode:", scan_mode)
+    st.write("⏱ Scan Period:", period)
 st.write("📈 BTC chart rendered")
 st.write("🔍 TOP OF FILE LOADED")
 import pandas as pd
