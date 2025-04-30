@@ -1,6 +1,7 @@
 st.write("🔍 TOP OF FILE LOADED")
 
 import streamlit as st
+st.write("🔍 TOP OF FILE LOADED")
 import pandas as pd
 import plotly.graph_objects as go
 import requests
