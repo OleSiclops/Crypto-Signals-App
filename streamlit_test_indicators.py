@@ -3,7 +3,7 @@ import streamlit as st
 from display_signal_card import display_signal_card
 
 st.set_page_config(page_title="Crypto Signal Dashboard v4.6.0", layout="wide")
-st.title("🚀 Crypto Signal Dashboard v4.6.0 – Styled Cards")
+st.title("🚀 Crypto Signal Dashboard v4.6.0 – Final Styled Cards")
 
 def mock_signals():
     return [
