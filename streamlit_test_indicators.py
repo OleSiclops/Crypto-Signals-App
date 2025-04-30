@@ -1,3 +1,4 @@
+st.write("🔍 TOP OF FILE LOADED")
 
 import streamlit as st
 import pandas as pd
@@ -49,3 +50,6 @@ def plot_btc_chart(df):
     fig.add_trace(go.Scatter(x=df.index, y=df["SMA_12h"], mode="lines", name="12h SMA", line=dict(dash="dot")))
     fig.update_layout(title="BTC 24h Price Chart with 12h SMA", height=350)
     st.plotly_chart(fig, use_container_width=True, key="btc_chart")
+
+st.write("✅ App reached end of script")
+st.markdown("**✅ Streamlit is rendering this app correctly.**")
