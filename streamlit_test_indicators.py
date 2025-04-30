@@ -9,6 +9,7 @@ st.write("🔁 Step 1: Fetching BTC price data")
 def fetch_btc_24h_prices():
     url = "https://pro-api.coingecko.com/api/v3/coins/bitcoin/market_chart"
     params = {"vs_currency": "usd", "days": "1"}
+    params["x_cg_pro_api_key"] = st.secrets["general"]["COINGECKO_API_KEY"]
     try:
         response = requests.get(url, params=params, timeout=5)
         response.raise_for_status()
@@ -48,13 +49,13 @@ from indicator_engine_v2 import IndicatorEngineV2
 
 COINGECKO_API_BASE = "https://pro-api.coingecko.com/api/v3"
 TOP_N_COINS = 50
-HEADERS = {"x-cg-pro-api-key": st.secrets["general"]["COINGECKO_API_KEY"]}
 
 def fetch_btc_24h_prices():
     url = f"{COINGECKO_API_BASE}/coins/bitcoin/market_chart"
     params = {"vs_currency": "usd", "days": "1"}
+    params["x_cg_pro_api_key"] = st.secrets["general"]["COINGECKO_API_KEY"]
     try:
-        response = requests.get(url, params=params, headers=HEADERS, timeout=5)
+        response = requests.get(url, params=params, timeout=5)
         response.raise_for_status()
         data = response.json().get("prices", [])
         df = pd.DataFrame(data, columns=["timestamp", "price"])
@@ -68,7 +69,7 @@ def get_btc_market_sentiment():
     url = f"{COINGECKO_API_BASE}/coins/bitcoin"
     params = {"localization": "false", "tickers": "false", "market_data": "true"}
     try:
-        response = requests.get(url, params=params, headers=HEADERS, timeout=5)
+        response = requests.get(url, params=params, timeout=5)
         response.raise_for_status()
         data = response.json()
         return data['market_data']['price_change_percentage_1h_in_currency']['usd']
