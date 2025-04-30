@@ -1,5 +1,7 @@
 
 import streamlit as st
+import requests
+import pandas as pd
 st.write("🔍 TOP OF FILE LOADED")
 
 st.write("🔁 Step 1: Fetching BTC price data")
