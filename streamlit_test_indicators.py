@@ -3,6 +3,33 @@ import streamlit as st
 st.write("🔍 TOP OF FILE LOADED")
 
 st.write("🔁 Step 1: Fetching BTC price data")
+
+def fetch_btc_24h_prices():
+    url = "https://pro-api.coingecko.com/api/v3/coins/bitcoin/market_chart"
+    params = {"vs_currency": "usd", "days": "1"}
+    try:
+        response = requests.get(url, params=params, timeout=5)
+        response.raise_for_status()
+        data = response.json().get("prices", [])
+        df = pd.DataFrame(data, columns=["timestamp", "price"])
+        df["timestamp"] = pd.to_datetime(df["timestamp"], unit="ms")
+        return df
+    except Exception as e:
+        st.warning("⚠️ Failed to fetch BTC 24h prices.")
+        return pd.DataFrame()
+
+def plot_btc_chart(df):
+    if df.empty:
+        st.warning("No BTC price data to display.")
+        return
+    df.set_index("timestamp", inplace=True)
+    df["SMA_12h"] = df["price"].rolling(window=12).mean()
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=df.index, y=df["price"], mode="lines", name="BTC Price"))
+    fig.add_trace(go.Scatter(x=df.index, y=df["SMA_12h"], mode="lines", name="12h SMA", line=dict(dash="dot")))
+    fig.update_layout(title="BTC 24h Price Chart with 12h SMA", height=350)
+    st.plotly_chart(fig, use_container_width=True, key="btc_chart")
+
 btc_df = fetch_btc_24h_prices()
 st.write("📊 BTC Data Head:", btc_df.head())
 
