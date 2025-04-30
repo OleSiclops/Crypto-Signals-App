@@ -1,6 +1,13 @@
 
 import streamlit as st
 st.write("🔍 TOP OF FILE LOADED")
+
+st.write("🔁 Step 1: Fetching BTC price data")
+btc_df = fetch_btc_24h_prices()
+st.write("📊 BTC Data Head:", btc_df.head())
+
+plot_btc_chart(btc_df)
+st.write("📈 BTC chart rendered")
 st.write("🔍 TOP OF FILE LOADED")
 import pandas as pd
 import plotly.graph_objects as go
