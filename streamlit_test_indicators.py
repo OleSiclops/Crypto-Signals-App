@@ -203,9 +203,6 @@ st_autorefresh(interval=120000, key="market_sentiment_refresh")
 btc_df = fetch_btc_24h_prices()
 plot_btc_chart(btc_df)
 
-    btc_change = get_btc_market_sentiment()
-    btc_gauge = (max(-5.0, min(5.0, btc_change)) + 5) * 10
-    
 with st.sidebar:
     scan_mode = st.radio("Scan Mode:", ["🛩️ Light (1h)", "🧠 Full (4h)"])
     period = st.radio("Top Gainers Period:", ["1h", "24h", "7d"])
