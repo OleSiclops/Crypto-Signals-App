@@ -104,12 +104,12 @@ def plot_btc_chart(df):
 # --- MARKET INDICATOR SNAPSHOT ---
 with st.expander("🧭 Market Indicator at a Glance", expanded=True):
     from fetcher import get_ohlc_data
-    from indicator_engine_v2 import calculate_all
+    from indicator_engine import run_all_indicators
     import plotly.graph_objects as go
 
     # Get BTC OHLC data and compute indicators
     btc_df = get_ohlc_data("bitcoin", resolution="1h")
-    signals = calculate_all(btc_df)
+    signals = run_all_indicators(btc_df)
 
     def draw_indicator_bar(label, value, colors, marker_label="", tooltip=""):
         fig = go.Figure()
