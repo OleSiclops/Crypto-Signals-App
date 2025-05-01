@@ -98,6 +98,7 @@ def plot_btc_chart(df):
 
 
 
+
 # --- MARKET INDICATOR SNAPSHOT ---
 with st.expander("🧭 Market Indicator at a Glance", expanded=False):
     st.markdown("### Market Summary Indicators")
@@ -115,27 +116,21 @@ with st.expander("🧭 Market Indicator at a Glance", expanded=False):
                           xaxis=dict(range=[0, 100], visible=False),
                           yaxis=dict(visible=False),
                           plot_bgcolor="white", paper_bgcolor="rgba(0,0,0,0)")
-        icon_html = f'''
-        <span title="{tooltip}" style="cursor: help;"> ℹ️</span>
-        '''
+        icon_html = f"<span title='{tooltip}' style='cursor: help;'> ℹ️</span>"
         st.markdown(f"**{label}:** {marker_label or str(value)}" + icon_html, unsafe_allow_html=True)
         st.plotly_chart(fig, use_container_width=True)
 
     col1, col2 = st.columns(2)
     with col1:
-        
         draw_indicator_bar("BTC 1h Change", 48, [("red", 33), ("yellow", 66), ("green", 100)],
                            "0.48%", "Raw price change % over 1 hour. High = strong movement.")
-draw_indicator_bar("BTC 1h Sentiment", 52, [("red", 33), ("yellow", 66), ("green", 100)],
+        draw_indicator_bar("BTC 1h Sentiment", 52, [("red", 33), ("yellow", 66), ("green", 100)],
                            "0.02%", "1-hour price change for BTC. High % = bullish sentiment.")
         draw_indicator_bar("RSI", 60, [("red", 33), ("yellow", 66), ("green", 100)],
                            tooltip="Relative Strength Index. 30–70 is neutral. >70 = overbought.")
         draw_indicator_bar("Volume", 45, [("red", 33), ("yellow", 66), ("green", 100)],
                            tooltip="Volume trend vs. 20-period average. High volume confirms momentum.")
-        draw_indicator_bar("StochRSI", 35, [("red", 33), ("yellow", 66), ("green", 100)],
-                           tooltip="Stochastic RSI. Detects overbought/oversold with high sensitivity.")
     with col2:
-        # MACD bar
         fig = go.Figure()
         fig.add_shape(type="rect", x0=0, x1=50, y0=0, y1=1, fillcolor="red", opacity=0.3, line_width=0)
         fig.add_shape(type="rect", x0=50, x1=100, y0=0, y1=1, fillcolor="blue", opacity=0.3, line_width=0)
@@ -151,6 +146,8 @@ draw_indicator_bar("BTC 1h Sentiment", 52, [("red", 33), ("yellow", 66), ("green
                            "Above 50 EMA", "Price vs. 50-period EMA. Above = bullish.")
         draw_indicator_bar("Fear & Greed", 53, [("red", 33), ("yellow", 66), ("green", 100)],
                            "53 (Neutral)", "Market emotion index. 0 = extreme fear, 100 = extreme greed.")
+        draw_indicator_bar("StochRSI", 35, [("red", 33), ("yellow", 66), ("green", 100)],
+                           tooltip="Stochastic RSI. Detects overbought/oversold with high sensitivity.")
 def generate_human_analysis(coin, scores):
     phrases = []
     if scores["RSI"] is not None:
