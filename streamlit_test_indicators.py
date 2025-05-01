@@ -1,4 +1,3 @@
-st.title("🚀 Crypto Signal Dashboard v4.5.6 – Humanized Analysis")
 
 import streamlit as st
 import pandas as pd
@@ -10,6 +9,7 @@ import ta
 st.set_page_config(page_title="Crypto Signal Dashboard v4.5.6", layout="wide")
 from streamlit_autorefresh import st_autorefresh
 from indicator_engine_v2 import IndicatorEngineV2
+st.title("🚀 Crypto Signal Dashboard v4.5.6 – Humanized Analysis")
 
 COINGECKO_API_BASE = "https://pro-api.coingecko.com/api/v3"
 TOP_N_COINS = 50
