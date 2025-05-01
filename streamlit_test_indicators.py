@@ -100,12 +100,18 @@ def plot_btc_chart(df):
 
 
 
+
 # --- MARKET INDICATOR SNAPSHOT ---
 with st.expander("🧭 Market Indicator at a Glance", expanded=True):
-    st.markdown("### Market Summary Indicators")
+    from fetcher import get_ohlc_data
+    from indicator_engine_v2 import analyze_indicators
+    import plotly.graph_objects as go
+
+    # Get BTC OHLC data and compute indicators
+    btc_df = get_ohlc_data("bitcoin", resolution="1h")
+    signals = analyze_indicators(btc_df)
 
     def draw_indicator_bar(label, value, colors, marker_label="", tooltip=""):
-        from streamlit.components.v1 import html
         fig = go.Figure()
         last = 0
         for color, end in colors:
@@ -113,42 +119,37 @@ with st.expander("🧭 Market Indicator at a Glance", expanded=True):
                           fillcolor=color, opacity=0.3, line_width=0)
             last = end
         fig.add_shape(type="line", x0=value, x1=value, y0=0, y1=3, line=dict(color="black", width=4))
-        fig.update_layout(height=40, margin=dict(l=10, r=10, t=10, b=10),
+        fig.update_layout(height=60, margin=dict(l=10, r=10, t=10, b=10),
                           xaxis=dict(range=[0, 100], visible=False),
                           yaxis=dict(visible=False),
                           plot_bgcolor="white", paper_bgcolor="rgba(0,0,0,0)")
         icon_html = f"<span title='{tooltip}' style='cursor: help;'> ℹ️</span>"
-        st.markdown(f"**{label}:** {marker_label or str(value)}" + icon_html, unsafe_allow_html=True)
+        st.markdown(f"**{label}:** {marker_label or str(round(value, 2))}" + icon_html, unsafe_allow_html=True)
         st.plotly_chart(fig, use_container_width=True)
 
     col1, col2 = st.columns(2)
     with col1:
-        draw_indicator_bar("BTC 1h Change", 48, [("red", 33), ("yellow", 66), ("green", 100)],
-                           "0.48%", "Raw price change % over 1 hour. High = strong movement.")
-        draw_indicator_bar("BTC 1h Sentiment", 52, [("red", 33), ("yellow", 66), ("green", 100)],
-                           "0.02%", "1-hour price change for BTC. High % = bullish sentiment.")
-        draw_indicator_bar("RSI", 60, [("red", 33), ("yellow", 66), ("green", 100)],
+        draw_indicator_bar("BTC 1h Change", signals.get("btc_1h_change", 0), [("red", 33), ("yellow", 66), ("green", 100)],
+                           f"{signals.get('btc_1h_change', 0):.2f}%", "Raw price change % over 1 hour. High = strong movement.")
+        draw_indicator_bar("BTC 1h Sentiment", signals.get("btc_1h_sentiment", 0), [("red", 33), ("yellow", 66), ("green", 100)],
+                           tooltip="Scored bullishness based on BTC's 1h move.")
+        draw_indicator_bar("RSI", signals.get("rsi", 0), [("red", 33), ("yellow", 66), ("green", 100)],
                            tooltip="BTC Relative Strength Index. 30–70 is neutral. >70 = overbought.")
-        draw_indicator_bar("Volume", 45, [("red", 33), ("yellow", 66), ("green", 100)],
-                           tooltip="Volume trend vs. 20-period average. High volume confirms momentum.")
+        draw_indicator_bar("Volume", signals.get("volume_score", 0), [("red", 33), ("yellow", 66), ("green", 100)],
+                           tooltip="Volume trend vs. average. High confirms momentum.")
     with col2:
-        fig = go.Figure()
-        fig.add_shape(type="rect", x0=0, x1=50, y0=0, y1=3, fillcolor="red", opacity=0.3, line_width=0)
-        fig.add_shape(type="rect", x0=50, x1=100, y0=0, y1=3, fillcolor="blue", opacity=0.3, line_width=0)
-        fig.add_shape(type="line", x0=100, x1=100, y0=0, y1=3, line=dict(color="black", width=4))
-        fig.update_layout(height=40, margin=dict(l=10, r=10, t=10, b=10),
-                          xaxis=dict(range=[0, 100], visible=False),
-                          yaxis=dict(visible=False),
-                          plot_bgcolor="white", paper_bgcolor="rgba(0,0,0,0)")
-        st.markdown("**MACD:** Bullish <span title='MACD crossover shows trend shift. Blue = bullish.' style='cursor: help;'> ℹ️</span>", unsafe_allow_html=True)
-        st.plotly_chart(fig, use_container_width=True)
+        draw_indicator_bar("MACD", 100 if signals.get("macd_trend") == "Bullish" else 0,
+                           [("red", 50), ("blue", 100)],
+                           signals.get("macd_trend", "Unknown"), "MACD crossover shows trend shift.")
+        draw_indicator_bar("EMA Trend", 100 if signals.get("ema_trend") == "Bullish" else 0,
+                           [("red", 50), ("green", 100)],
+                           signals.get("ema_trend", "Unknown"), "Price vs. 50 EMA. Above = bullish.")
+        draw_indicator_bar("Fear & Greed", signals.get("fear_greed", 50), [("red", 33), ("yellow", 66), ("green", 100)],
+                           f"{signals.get('fear_greed', 50)}", "Market emotion. 0 = fear, 100 = greed.")
+        draw_indicator_bar("StochRSI", signals.get("stoch_rsi", 0), [("red", 33), ("yellow", 66), ("green", 100)],
+                           tooltip="Stochastic RSI. Detects overbought/oversold swings.")
 
-        draw_indicator_bar("EMA Trend", 75, [("red", 33), ("yellow", 66), ("green", 100)],
-                           "Above 50 EMA", "Price vs. 50-period EMA. Above = bullish.")
-        draw_indicator_bar("Fear & Greed", 53, [("red", 33), ("yellow", 66), ("green", 100)],
-                           "53 (Neutral)", "Market emotion index. 0 = extreme fear, 100 = extreme greed.")
-        draw_indicator_bar("StochRSI", 35, [("red", 33), ("yellow", 66), ("green", 100)],
-                           tooltip="Stochastic RSI. Detects overbought/oversold with high sensitivity.")
+
 def generate_human_analysis(coin, scores):
     phrases = []
     if scores["RSI"] is not None:
