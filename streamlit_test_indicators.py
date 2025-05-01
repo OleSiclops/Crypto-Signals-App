@@ -5,6 +5,8 @@ import plotly.graph_objects as go
 import requests
 import random
 import ta
+
+st.set_page_config(page_title="Crypto Signal Dashboard v4.5.6", layout="wide")
 from streamlit_autorefresh import st_autorefresh
 from indicator_engine_v2 import IndicatorEngineV2
 
@@ -161,7 +163,6 @@ def fmt(price):
         return f"${price:.5f}"
 
 
-st.set_page_config(page_title="Crypto Signal Dashboard v4.5.6", layout="wide")
 st.title("🚀 Crypto Signal Dashboard v4.5.6 – Humanized Analysis")
 st_autorefresh(interval=120000, key="market_sentiment_refresh")
 
