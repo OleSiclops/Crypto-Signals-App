@@ -1,5 +1,7 @@
 import streamlit as st
-API_KEY = st.secrets["general"]["COINGECKO_API_KEY"]
+HEADERS = {"x-cg-pro-api-key": st.secrets["general"]["COINGECKO_API_KEY"]}
+
+import streamlit as st
 
 # fetcher.py
 
@@ -16,7 +18,7 @@ def get_top_gainers(period="1h"):
         "page": 1,
         "price_change_percentage": "1h,4h"
     }
-    response = requests.get(url, params=params)
+    response = requests.get(url, params=params, headers=HEADERS)
     response.raise_for_status()
     return [coin["id"] for coin in response.json()]
 
@@ -24,7 +26,7 @@ def get_ohlc_data(coin_id, days=1):
     try:
         url = f"{COINGECKO_API_BASE}/coins/{coin_id}/ohlc"
         params = {"vs_currency": "usd", "days": days}
-        response = requests.get(url, params=params)
+        response = requests.get(url, params=params, headers=HEADERS)
         response.raise_for_status()
         log_resolution(coin_id, "Higher Accuracy (Hourly Data)", "Success")
         return response.json()
