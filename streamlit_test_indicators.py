@@ -141,11 +141,11 @@ with st.expander("🧭 Market Indicator at a Glance", expanded=True):
         draw_indicator_bar("BTC 1h Sentiment", sentiment, [("red", 33), ("yellow", 66), ("green", 100)],
                            f"{sentiment:.0f}", "Bullish sentiment scored from BTC 1h move.")
 
-        rsi = engine.calculate_rsi()
+        rsi = engine.calculate_rsi() or 0
         draw_indicator_bar("RSI", rsi, [("red", 33), ("yellow", 66), ("green", 100)],
                            f"{rsi:.2f}", "BTC Relative Strength Index. >70 = overbought.")
 
-        vol = engine.calculate_volume_spike()
+        vol = engine.calculate_volume_spike() or 0
         draw_indicator_bar("Volume", vol, [("red", 33), ("yellow", 66), ("green", 100)],
                            f"{vol:.0f}", "Volume spike vs. average.")
 
@@ -161,7 +161,7 @@ with st.expander("🧭 Market Indicator at a Glance", expanded=True):
         draw_indicator_bar("Fear & Greed", 53, [("red", 33), ("yellow", 66), ("green", 100)],
                            "53", "Static mock of market sentiment.")
 
-        stoch = engine.calculate_stoch_rsi()
+        stoch = engine.calculate_stoch_rsi() or 0
         draw_indicator_bar("StochRSI", stoch, [("red", 33), ("yellow", 66), ("green", 100)],
                            f"{stoch:.2f}", "Stochastic RSI sensitivity.")
 def generate_human_analysis(coin, scores):
