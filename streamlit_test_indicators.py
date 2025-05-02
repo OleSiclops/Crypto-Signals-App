@@ -107,7 +107,9 @@ with st.expander("🧭 Market Indicator at a Glance", expanded=True):
     from indicator_engine_v2 import IndicatorEngineV2
     import plotly.graph_objects as go
 
-    df = get_ohlc_data("bitcoin", days=1)
+    import pandas as pd
+    data = get_ohlc_data("bitcoin", days=1)
+    df = pd.DataFrame(data, columns=["timestamp", "open", "high", "low", "close"])
     engine = IndicatorEngineV2(df)
 
     def draw_indicator_bar(label, value, colors, marker_label="", tooltip=""):
