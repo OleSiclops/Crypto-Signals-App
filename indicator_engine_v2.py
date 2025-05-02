@@ -42,20 +42,20 @@ class IndicatorEngineV2:
 
     def calculate_volume_spike(self):
         try:
-            if "volume" not in self.df.columns or self.df["volume"].isna().all():
-                print("⚠️ No volume data found in DataFrame.")
-                return 0
-            recent_volume = self.df["volume"].iloc[-1]
-            avg_volume = self.df["volume"].rolling(window=5).mean().iloc[-2]
-            if pd.isna(recent_volume) or pd.isna(avg_volume) or avg_volume == 0:
-                print("⚠️ Invalid volume values (NaN or zero).")
-                return 0
-            spike_ratio = (recent_volume / avg_volume) * 100
-            return min(spike_ratio, 100)
-        except Exception as e:
-            print(f"Volume spike calc error: {e}")
-            return 0
-def calculate_stoch_rsi(self):
+            if 'volume' not in self.df.columns:
+                return None
+            avg_vol = self.df['volume'].rolling(window=20).mean()
+            current_vol = self.df['volume'].iloc[-1]
+            if current_vol > avg_vol.iloc[-1] * 1.3:
+                return 100
+            elif current_vol > avg_vol.iloc[-1]:
+                return 60
+            else:
+                return 30
+        except:
+            return None
+
+    def calculate_stoch_rsi(self):
         try:
             stoch_rsi = ta.momentum.StochRSIIndicator(close=self.df['close']).stochrsi_k()
             if stoch_rsi.iloc[-2] < 0.2 and stoch_rsi.iloc[-1] > 0.2:
@@ -64,3 +64,42 @@ def calculate_stoch_rsi(self):
                 return 30
         except:
             return None
+
+    def calculate_adx(self):
+        try:
+            adx = ta.trend.ADXIndicator(high=self.df['high'], low=self.df['low'], close=self.df['close']).adx()
+            latest_adx = adx.iloc[-1]
+            if latest_adx > 25:
+                return 100
+            elif latest_adx > 20:
+                return 60
+            else:
+                return 30
+        except:
+            return None
+
+    def calculate_all(self):
+        self.scores['RSI'] = self.calculate_rsi()
+        self.scores['MACD'] = self.calculate_macd()
+        self.scores['EMA'] = self.calculate_ema_trend()
+        self.scores['Volume'] = self.calculate_volume_spike()
+        self.scores['StochRSI'] = self.calculate_stoch_rsi()
+        self.scores['ADX'] = self.calculate_adx()
+        return self.scores
+
+    def calculate_weighted_score(self):
+        weights = {
+            'RSI': 0.25,
+            'MACD': 0.25,
+            'EMA': 0.20,
+            'Volume': 0.15,
+            'StochRSI': 0.10,
+            'ADX': 0.05
+        }
+        total = 0
+        weight_total = 0
+        for k, w in weights.items():
+            if self.scores.get(k) is not None:
+                total += self.scores[k] * w
+                weight_total += w
+        return round(total / weight_total, 2) if weight_total > 0 else 0.0
