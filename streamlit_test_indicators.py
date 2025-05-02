@@ -104,12 +104,11 @@ def plot_btc_chart(df):
 # --- MARKET INDICATOR SNAPSHOT ---
 with st.expander("🧭 Market Indicator at a Glance", expanded=True):
     from fetcher import get_ohlc_data
-    from indicator_engine import run_all_indicators
+    from indicator_engine_v2 import IndicatorEngineV2
     import plotly.graph_objects as go
 
-    # Get BTC OHLC data and compute indicators
-    btc_df = get_ohlc_data("bitcoin", resolution="1h")
-    signals = run_all_indicators(btc_df)
+    df = get_ohlc_data("bitcoin", resolution="1h", use_market_chart=True)
+    engine = IndicatorEngineV2(df)
 
     def draw_indicator_bar(label, value, colors, marker_label="", tooltip=""):
         fig = go.Figure()
@@ -129,27 +128,37 @@ with st.expander("🧭 Market Indicator at a Glance", expanded=True):
 
     col1, col2 = st.columns(2)
     with col1:
-        draw_indicator_bar("BTC 1h Change", signals.get("btc_1h_change", 0), [("red", 33), ("yellow", 66), ("green", 100)],
-                           f"{signals.get('btc_1h_change', 0):.2f}%", "Raw price change % over 1 hour. High = strong movement.")
-        draw_indicator_bar("BTC 1h Sentiment", signals.get("btc_1h_sentiment", 0), [("red", 33), ("yellow", 66), ("green", 100)],
-                           tooltip="Scored bullishness based on BTC's 1h move.")
-        draw_indicator_bar("RSI", signals.get("rsi", 0), [("red", 33), ("yellow", 66), ("green", 100)],
-                           tooltip="BTC Relative Strength Index. 30–70 is neutral. >70 = overbought.")
-        draw_indicator_bar("Volume", signals.get("volume_score", 0), [("red", 33), ("yellow", 66), ("green", 100)],
-                           tooltip="Volume trend vs. average. High confirms momentum.")
+        btc_change = engine.get_btc_change()
+        draw_indicator_bar("BTC 1h Change", btc_change, [("red", 33), ("yellow", 66), ("green", 100)],
+                           f"{btc_change:.2f}%", "Raw price change % over 1 hour.")
+
+        sentiment = min(100, max(0, btc_change + 50))
+        draw_indicator_bar("BTC 1h Sentiment", sentiment, [("red", 33), ("yellow", 66), ("green", 100)],
+                           f"{sentiment:.0f}", "Bullish sentiment scored from BTC 1h move.")
+
+        rsi = engine.calculate_rsi()
+        draw_indicator_bar("RSI", rsi, [("red", 33), ("yellow", 66), ("green", 100)],
+                           f"{rsi:.2f}", "BTC Relative Strength Index. >70 = overbought.")
+
+        vol = engine.calculate_volume_spike()
+        draw_indicator_bar("Volume", vol, [("red", 33), ("yellow", 66), ("green", 100)],
+                           f"{vol:.0f}", "Volume spike vs. average.")
+
     with col2:
-        draw_indicator_bar("MACD", 100 if signals.get("macd_trend") == "Bullish" else 0,
-                           [("red", 50), ("blue", 100)],
-                           signals.get("macd_trend", "Unknown"), "MACD crossover shows trend shift.")
-        draw_indicator_bar("EMA Trend", 100 if signals.get("ema_trend") == "Bullish" else 0,
-                           [("red", 50), ("green", 100)],
-                           signals.get("ema_trend", "Unknown"), "Price vs. 50 EMA. Above = bullish.")
-        draw_indicator_bar("Fear & Greed", signals.get("fear_greed", 50), [("red", 33), ("yellow", 66), ("green", 100)],
-                           f"{signals.get('fear_greed', 50)}", "Market emotion. 0 = fear, 100 = greed.")
-        draw_indicator_bar("StochRSI", signals.get("stoch_rsi", 0), [("red", 33), ("yellow", 66), ("green", 100)],
-                           tooltip="Stochastic RSI. Detects overbought/oversold swings.")
+        macd = 100 if engine.calculate_macd() == "Bullish" else 0
+        draw_indicator_bar("MACD", macd, [("red", 50), ("blue", 100)],
+                           "Bullish" if macd else "Bearish", "MACD crossover trend.")
 
+        ema = 100 if engine.calculate_ema_trend() == "Bullish" else 0
+        draw_indicator_bar("EMA Trend", ema, [("red", 50), ("green", 100)],
+                           "Bullish" if ema else "Bearish", "Price vs. EMA50.")
 
+        draw_indicator_bar("Fear & Greed", 53, [("red", 33), ("yellow", 66), ("green", 100)],
+                           "53", "Static mock of market sentiment.")
+
+        stoch = engine.calculate_stoch_rsi()
+        draw_indicator_bar("StochRSI", stoch, [("red", 33), ("yellow", 66), ("green", 100)],
+                           f"{stoch:.2f}", "Stochastic RSI sensitivity.")
 def generate_human_analysis(coin, scores):
     phrases = []
     if scores["RSI"] is not None:
