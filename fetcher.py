@@ -1,5 +1,5 @@
 import streamlit as st
-API_KEY = st.secrets["api"]["coingecko_key"]
+API_KEY = st.secrets["general"]["COINGECKO_API_KEY"]
 
 # fetcher.py
 
