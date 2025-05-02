@@ -130,7 +130,7 @@ with st.expander("🧭 Market Indicator at a Glance", expanded=True):
 
     col1, col2 = st.columns(2)
     with col1:
-        btc_change = engine.get_btc_change()
+        btc_change = ((df["close"].iloc[-1] - df["close"].iloc[0]) / df["close"].iloc[0]) * 100
         draw_indicator_bar("BTC 1h Change", btc_change, [("red", 33), ("yellow", 66), ("green", 100)],
                            f"{btc_change:.2f}%", "Raw price change % over 1 hour.")
 
