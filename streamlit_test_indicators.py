@@ -110,6 +110,9 @@ with st.expander("🧭 Market Indicator at a Glance", expanded=True):
     import pandas as pd
     data = get_ohlc_data("bitcoin", days=1)
     df = pd.DataFrame(data, columns=["timestamp", "open", "high", "low", "close"])
+    if df.empty:
+        st.error("⚠️ Failed to load BTC data. Check your CoinGecko access or API key.")
+        st.stop()
     engine = IndicatorEngineV2(df)
 
     def draw_indicator_bar(label, value, colors, marker_label="", tooltip=""):
