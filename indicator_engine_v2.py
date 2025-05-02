@@ -55,3 +55,12 @@ class IndicatorEngineV2:
         except Exception as e:
             print(f"Volume spike calc error: {e}")
             return 0
+def calculate_stoch_rsi(self):
+        try:
+            stoch_rsi = ta.momentum.StochRSIIndicator(close=self.df['close']).stochrsi_k()
+            if stoch_rsi.iloc[-2] < 0.2 and stoch_rsi.iloc[-1] > 0.2:
+                return 100
+            else:
+                return 30
+        except:
+            return None
