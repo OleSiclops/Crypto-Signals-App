@@ -1,3 +1,4 @@
+import pandas as pd
 import streamlit as st
 HEADERS = {"x-cg-pro-api-key": st.secrets["general"]["COINGECKO_API_KEY"]}
 
